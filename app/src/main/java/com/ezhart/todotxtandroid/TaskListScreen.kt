@@ -14,10 +14,7 @@ import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 
 @Composable
 fun TaskListScreen(onNavigateToSettings: () -> Unit) {
-    val t = listOf<Task>(
-        Task("thing"),
-        Task("other thing")
-    )
+    val t = generateFakeTasks(100)
 
     var showFilterSheet by remember { mutableStateOf(false) }
     var showNavSheet by remember { mutableStateOf(false) }
@@ -36,4 +33,13 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             NavSheet(showNavSheet, {showNavSheet = false}, onNavigateToSettings)
         }
     }
+}
+
+fun generateFakeTasks(count: Int) : List<Task>{
+    val x = mutableListOf<Task>()
+    for (n in 0..count){
+        x.add(Task("Task $n"))
+    }
+
+    return x
 }

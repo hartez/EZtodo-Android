@@ -2,6 +2,7 @@ package com.ezhart.todotxtandroid
 
 import com.ezhart.todotxtandroid.data.Task
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 
@@ -111,9 +112,58 @@ class TaskUnitTests {
         assertEquals(null, task.createdDate)
     }
 
-    // TODO projects
+    @Test
+    fun task_with_project(){
+        val task = Task("2025-02-31 buy tofu +shopping")
+        assertTrue(task.projects.contains("+shopping"))
+    }
 
-    // TODO contexts
+    @Test
+    fun project_with_hyphen(){
+        val task = Task("2025-02-31 buy tofu +dinner-experiment")
+        assertTrue(task.projects.contains("+dinner-experiment"))
+    }
+
+    @Test
+    fun task_with_projects(){
+        val task = Task("2025-02-31 buy tofu +shopping +dinner")
+        assertTrue(task.projects.contains("+shopping"))
+        assertTrue(task.projects.contains("+dinner"))
+    }
+
+    @Test
+    fun task_with_project_in_middle(){
+        val task = Task("2025-02-31 +project1 some more task info +project2 and some more stuff")
+        assertTrue(task.projects.contains("+project1"))
+        assertTrue(task.projects.contains("+project2"))
+    }
+
+    @Test
+    fun task_with_context(){
+        val task = Task("2025-02-31 buy tofu @shopping")
+        assertTrue(task.contexts.contains("@shopping"))
+    }
+
+    @Test
+    fun context_with_hyphen(){
+        val task = Task("2025-02-31 buy tofu @running-errands")
+        assertTrue(task.contexts.contains("@running-errands"))
+    }
+
+    @Test
+    fun task_with_contexts(){
+        val task = Task("2025-02-31 buy tofu @errands @wholefoods")
+        assertTrue(task.contexts.contains("@errands"))
+        assertTrue(task.contexts.contains("@wholefoods"))
+    }
+
+    @Test
+    fun task_with_context_in_middle(){
+        val task = Task("2025-02-31 @home some more task info @office and some more stuff")
+        assertTrue(task.contexts.contains("@home"))
+        assertTrue(task.contexts.contains("@office"))
+    }
+
 
     @Test
     fun task_with_metadata(){
@@ -146,5 +196,12 @@ class TaskUnitTests {
         val task = Task("2025-02-31 task data due:2025-03-14")
         assertEquals("2025-03-14", task.metadata["due"])
         assertEquals(LocalDate.of(2025, 3, 14), task.dueDate)
+    }
+
+    @Test
+    fun task_due_not_in_body(){
+        // If there's a valid due date, that metadata doesn't display in the task body
+        val task = Task("2025-02-31 task data due:2025-03-14")
+        assertEquals("task data", task.body)
     }
 }

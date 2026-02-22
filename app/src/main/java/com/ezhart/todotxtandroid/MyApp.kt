@@ -18,7 +18,7 @@ fun MyApp() {
     val navController = rememberNavController()
     NavHost(navController, startDestination = Tasks) {
         composable<Tasks> {
-            TaskListScreen({ navController.navigate(route = Settings) })
+            TaskListScreen { navController.navigate(route = Settings) }
         }
 
         composable<Settings> {
