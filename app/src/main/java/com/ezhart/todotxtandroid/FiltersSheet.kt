@@ -3,11 +3,9 @@ package com.ezhart.todotxtandroid
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -17,8 +15,6 @@ import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -76,19 +72,19 @@ fun FiltersSheet(
                     .padding(0.dp, 16.dp, 0.dp, 0.dp)
             ) {
 
-                FilterOption("All Tasks", Icons.Outlined.Inbox, selectedFilter is AllTasksFilter) {
+                MenuOption("All Tasks", Icons.Outlined.Inbox, selectedFilter is AllTasksFilter) {
                     onUpdateFilter(AllTasksFilter)
                     expandedOption = ExpandedOption.None
                     onClose()
                 }
 
-                FilterOption("Due", Icons.Outlined.Timer, selectedFilter is DueFilter) {
+                MenuOption("Due", Icons.Outlined.Timer, selectedFilter is DueFilter) {
                     onUpdateFilter(DueFilter)
                     expandedOption = ExpandedOption.None
                     onClose()
                 }
 
-                FilterOption(
+                MenuOption(
                     "Pending",
                     Icons.Outlined.CheckBoxOutlineBlank,
                     selectedFilter is PendingFilter
@@ -98,7 +94,7 @@ fun FiltersSheet(
                     onClose()
                 }
 
-                FilterOption("Completed", Icons.Outlined.Check, selectedFilter is CompletedFilter) {
+                MenuOption("Completed", Icons.Outlined.Check, selectedFilter is CompletedFilter) {
                     onUpdateFilter(CompletedFilter)
                     expandedOption = ExpandedOption.None
                     onClose()

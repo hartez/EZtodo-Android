@@ -17,14 +17,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 
 @Composable
-fun FilterOption(text: String, icon: ImageVector? = null, selected: Boolean, onSelected: () -> Unit) {
+fun MenuOption(text: String, icon: ImageVector? = null, selected: Boolean, onSelected: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,19 +60,19 @@ fun FilterOption(text: String, icon: ImageVector? = null, selected: Boolean, onS
 @Preview(name = "Filter Option Light")
 @Preview(name = "Filter Option Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun FilterOptionPreview() {
+fun MenuOptionPreview() {
     TodotxtAndroidTheme {
         Surface {
             Column {
-                FilterOption(
+                MenuOption(
                     "All Tasks", Icons.Outlined.Inbox, true
                 ) { }
 
-                FilterOption(
+                MenuOption(
                     "All Tasks", Icons.Outlined.Inbox, false
                 ) { }
 
-                FilterOption(
+                MenuOption(
                     "+paintShed", null, false
                 ) { }
             }

@@ -6,16 +6,34 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
+import com.ezhart.todotxtandroid.viewmodels.SettingsViewModel
+
 
 @Composable
 fun SettingsScreen() {
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+    val context = LocalContext.current
+
+    val isSignedIn = settingsViewModel.isSignedIn
+    val accountName by settingsViewModel.accountName.collectAsStateWithLifecycle("")
+    val accountEmail by settingsViewModel.accountEmail.collectAsStateWithLifecycle("")
 
     TodotxtAndroidTheme {
         Scaffold(
@@ -25,6 +43,17 @@ fun SettingsScreen() {
             Column(
                 modifier = Modifier.padding(innerPadding)
             ) {
+                SectionTitle("Account")
+
+                if (isSignedIn) {
+                    Text(accountName)
+                    Text(accountEmail)
+                } else {
+                    Button(onClick = { settingsViewModel.beginSignIn(context) }) {
+                        Text("Sign In")
+                    }
+                }
+
                 // About
                 SectionTitle("About")
 
@@ -36,6 +65,7 @@ fun SettingsScreen() {
         }
     }
 }
+
 
 @Composable
 fun SectionTitle(title: String) {

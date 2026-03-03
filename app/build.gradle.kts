@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -12,6 +14,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.ezhart.todotxtandroid"
         minSdk = 28
@@ -20,6 +26,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val dropboxKey: String = gradleLocalProperties(rootDir, providers).getProperty("DROPBOX_APP_KEY")
+        buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKey}\"")
+        manifestPlaceholders["dropboxKey"] = dropboxKey
     }
 
     buildTypes {
@@ -50,6 +60,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -58,4 +69,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
+    implementation("com.dropbox.core:dropbox-android-sdk:7.0.0")
+    implementation(libs.kotlin.stdlib)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore:1.0.0")
 }

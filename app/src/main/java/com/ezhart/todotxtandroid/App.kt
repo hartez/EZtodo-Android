@@ -1,20 +1,22 @@
 package com.ezhart.todotxtandroid
 
+import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ezhart.todotxtandroid.data.SettingsRepository
+import com.ezhart.todotxtandroid.data.SettingsStorage
+import com.ezhart.todotxtandroid.dropbox.DropboxService
 import kotlinx.serialization.Serializable
 
 @Serializable
-object Tasks
-
+data object Tasks
 @Serializable
 object Settings
 
-
 @Composable
-fun MyApp() {
+fun App() {
     val navController = rememberNavController()
     NavHost(navController, startDestination = Tasks) {
         composable<Tasks> {
@@ -25,4 +27,9 @@ fun MyApp() {
             SettingsScreen()
         }
     }
+}
+
+class TodotxtAndroidApplication : Application() {
+    val dropboxService: DropboxService by lazy { DropboxService(this) }
+    val settingsRepository: SettingsRepository by lazy { SettingsRepository(SettingsStorage(this)) }
 }
