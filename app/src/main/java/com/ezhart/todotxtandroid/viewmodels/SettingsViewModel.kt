@@ -28,6 +28,7 @@ class SettingsViewModel(
     var isSignedIn by mutableStateOf(dropboxService.isAuthenticated())
     var accountName = settingsRepository.accountDisplayName
     var accountEmail = settingsRepository.accountEmail
+    var todoPath = settingsRepository.todoPath
 
     fun beginSignIn(context: Context) {
         dropboxService.signIn(context) {
@@ -53,6 +54,12 @@ class SettingsViewModel(
             } else {
                 settingsRepository.setAccountDisplayName("")
             }
+        }
+    }
+
+    fun updateTodoPath(todoPath:String){
+        viewModelScope.launch {
+            settingsRepository.setTodoPath(todoPath)
         }
     }
 

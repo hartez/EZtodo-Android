@@ -16,6 +16,7 @@ class SettingsStorage(private val context: Context) {
     private object PreferencesKeys {
         val ACCOUNT_DISPLAY_NAME = stringPreferencesKey("account_display_name")
         val ACCOUNT_EMAIL = stringPreferencesKey("account_email")
+        val TODO_PATH = stringPreferencesKey("todo_path")
     }
 
     val accountDisplayName: Flow<String> = context.dataStore.data.map { preferences ->
@@ -24,6 +25,10 @@ class SettingsStorage(private val context: Context) {
 
     val accountEmail: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.ACCOUNT_EMAIL] ?: ""
+    }
+
+    val todoPath: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.TODO_PATH] ?: "/tdtest/todo.txt"
     }
 
     suspend fun setAccountDisplayName(accountDisplayName: String) {
@@ -37,6 +42,12 @@ class SettingsStorage(private val context: Context) {
             preferences[PreferencesKeys.ACCOUNT_EMAIL] = accountEmail
         }
     }
+
+    suspend fun setTodoPath(todoPath: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TODO_PATH] = todoPath
+        }
+    }
 }
 
 class SettingsRepository(
@@ -44,6 +55,7 @@ class SettingsRepository(
 ) {
     val accountDisplayName: Flow<String> = settingsStorage.accountDisplayName
     val accountEmail: Flow<String> = settingsStorage.accountEmail
+    val todoPath: Flow<String> = settingsStorage.todoPath
 
     suspend fun setAccountDisplayName(accountDisplayName: String) {
         settingsStorage.setAccountDisplayName(accountDisplayName)
@@ -51,6 +63,10 @@ class SettingsRepository(
 
     suspend fun setAccountEmail(accountEmail: String) {
         settingsStorage.setAccountEmail(accountEmail)
+    }
+
+    suspend fun setTodoPath(todoPath: String) {
+        settingsStorage.setTodoPath(todoPath)
     }
 }
 
