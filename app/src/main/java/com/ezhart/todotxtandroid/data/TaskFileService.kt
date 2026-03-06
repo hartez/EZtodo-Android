@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.io.File
+import java.io.FileNotFoundException
 import kotlin.io.path.Path
 
 class TaskFileService(val applicationContext: Context, settings: SettingsRepository) {
@@ -15,21 +16,29 @@ class TaskFileService(val applicationContext: Context, settings: SettingsReposit
         ""
     )
 
-    fun loadTasksFromStorage(): List<Task> {
-
-        // TODO error handling for missing file
+    fun loadTasksFromStorage(): ReadTaskListResult {
 
         val file = File(applicationContext.filesDir, fileName.value)
 
-        val lines = file.readLines()
+        if(file.exists()) {
 
-        val tasks = mutableListOf<Task>()
+            try {
+                val lines = file.readLines()
 
-        for (line in lines) {
-            tasks.add(Task(line))
+                val tasks = mutableListOf<Task>()
+
+                for (line in lines) {
+                    tasks.add(Task(line))
+                }
+
+                return ReadTaskListResult.Success(tasks)
+            }
+            catch(e: Exception){
+                return ReadTaskListResult.Error(e)
+            }
         }
 
-        return tasks
+        return ReadTaskListResult.Error(FileNotFoundException(file.path))
     }
 
     fun getFileName(path: String): String {
@@ -52,4 +61,9 @@ class TaskFileService(val applicationContext: Context, settings: SettingsReposit
 
         return x
     }
+}
+
+sealed interface ReadTaskListResult {
+    class Success(val tasks: List<Task>) : ReadTaskListResult
+    class Error(val e: Exception) : ReadTaskListResult
 }

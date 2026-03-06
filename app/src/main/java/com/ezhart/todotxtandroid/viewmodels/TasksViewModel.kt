@@ -1,5 +1,7 @@
 package com.ezhart.todotxtandroid.viewmodels
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +14,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.ezhart.todotxtandroid.TAG
 import com.ezhart.todotxtandroid.TodotxtAndroidApplication
 import com.ezhart.todotxtandroid.data.AllTasksFilter
 import com.ezhart.todotxtandroid.data.CompletedFilter
@@ -20,6 +23,7 @@ import com.ezhart.todotxtandroid.data.DueFilter
 import com.ezhart.todotxtandroid.data.Filter
 import com.ezhart.todotxtandroid.data.PendingFilter
 import com.ezhart.todotxtandroid.data.ProjectFilter
+import com.ezhart.todotxtandroid.data.ReadTaskListResult
 import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.data.TaskFileService
 import com.ezhart.todotxtandroid.dropbox.DropboxService
@@ -36,9 +40,11 @@ data class TaskListUIState(
     val filter: Filter = AllTasksFilter,
     val allContexts: List<String> = listOf(),
     val allProjects: List<String> = listOf()
-){
+) {
     val filterLabel = filter.display()
 }
+
+data class PendingAlert(val message: String)
 
 class TasksViewModel(
     private val taskFileService: TaskFileService,
@@ -50,15 +56,20 @@ class TasksViewModel(
     var tasks: MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableStateListOf())
     val filter = MutableStateFlow<Filter>(AllTasksFilter)
     var isRefreshing by mutableStateOf(false)
+    var alert by mutableStateOf<String?>(null)
 
-    val uiState: StateFlow<TaskListUIState> = combine(filter, tasks){
-        filter1, tasks ->
-        TaskListUIState(filterTasks(tasks, filter1),
+    val uiState: StateFlow<TaskListUIState> = combine(filter, tasks) { filter1, tasks ->
+        TaskListUIState(
+            filterTasks(tasks, filter1),
             filter1,
             allContexts(tasks),
             allProjects(tasks)
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = TaskListUIState())
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        initialValue = TaskListUIState()
+    )
 
     fun updateFilter(newFilter: Filter) {
         filter.value = newFilter
@@ -85,15 +96,32 @@ class TasksViewModel(
         return tasks.flatMap { t -> t.contexts }.distinct().sorted()
     }
 
+    fun showAlert(message: String){
+        alert = message
+    }
+
+    fun clearAlert(){
+        alert = null
+    }
+
     fun loadTasks(shouldSync: Boolean = false) {
         viewModelScope.launch {
             isRefreshing = true
 
-            if(shouldSync){
+            if (shouldSync) {
                 dropboxService.sync()
             }
 
-            tasks.value = taskFileService.loadTasksFromStorage().toMutableList()
+            when (val result = taskFileService.loadTasksFromStorage()) {
+                is ReadTaskListResult.Success -> tasks.value = result.tasks.toMutableList()
+                is ReadTaskListResult.Error -> {
+                    tasks.value = mutableListOf()
+                    Log.e(TAG, result.e.toString())
+
+                    showAlert("Error reading tasks from local storage")
+                }
+            }
+
 
             // TODO this is a hack, got to figure out how to fix this
             // if the update is too fast, the refreshing state will get stuck

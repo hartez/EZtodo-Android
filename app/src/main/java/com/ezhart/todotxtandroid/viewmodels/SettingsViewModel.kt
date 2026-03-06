@@ -60,6 +60,7 @@ class SettingsViewModel(
                 }
             } else {
                 settingsRepository.setAccountDisplayName("")
+                settingsRepository.setAccountEmail("")
             }
         }
     }

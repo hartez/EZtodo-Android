@@ -2,20 +2,26 @@ package com.ezhart.todotxtandroid.dropbox
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.ui.graphics.vector.addPathNodes
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ezhart.todotxtandroid.TAG
 import com.ezhart.todotxtandroid.data.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class DropboxService(val applicationContext: Context,
-                     private val settings: SettingsRepository) {
+class DropboxService(
+    val applicationContext: Context,
+    private val settings: SettingsRepository
+) {
+    val todoPath = settings.todoPath.stateIn(
+        kotlinx.coroutines.MainScope(),
+        SharingStarted.Eagerly,
+        ""
+    )
 
     var awaitingSignInResponse = false
 
@@ -55,10 +61,7 @@ class DropboxService(val applicationContext: Context,
         // TODO This service also needs the settings repository
         // TODO force lower path
 
-        // TODO Fix this like in TaskFileService if that ends up working
-        settings.todoPath.collectLatest {
-            downloadTaskFile(it)
-        }
+        downloadTaskFile(todoPath.value)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -93,7 +96,6 @@ class DropboxService(val applicationContext: Context,
 
         return null
     }
-
 
     fun onResume() {
         authHandler.onResume()
