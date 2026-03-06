@@ -9,6 +9,8 @@ import com.ezhart.todotxtandroid.data.SettingsRepository
 import com.ezhart.todotxtandroid.data.SettingsStorage
 import com.ezhart.todotxtandroid.data.TaskFileService
 import com.ezhart.todotxtandroid.dropbox.DropboxService
+import com.ezhart.todotxtandroid.ui.SettingsScreen
+import com.ezhart.todotxtandroid.ui.TaskListScreen
 import kotlinx.serialization.Serializable
 
 @Serializable

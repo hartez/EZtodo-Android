@@ -1,4 +1,4 @@
-package com.ezhart.todotxtandroid
+package com.ezhart.todotxtandroid.ui
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
@@ -42,7 +42,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             bottomBar = {
                 AppBar(
                     { isFilterSheetOpen = true },
-                    {  isMenuSheetOpen = true }
+                    { isMenuSheetOpen = true }
                 )
             }
         ) { innerPadding ->

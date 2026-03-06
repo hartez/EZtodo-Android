@@ -1,4 +1,4 @@
-package com.ezhart.todotxtandroid
+package com.ezhart.todotxtandroid.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
