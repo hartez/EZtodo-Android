@@ -6,28 +6,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckBoxOutlineBlank
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ezhart.todotxtandroid.data.PendingFilter
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NavSheet(open: Boolean, onClose: () -> Unit, onNavigateToSettings: () -> Unit) {
+fun MenuSheet(
+    open: Boolean,
+    onClose: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onRefresh: () -> Unit
+) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -47,8 +47,18 @@ fun NavSheet(open: Boolean, onClose: () -> Unit, onNavigateToSettings: () -> Uni
                             topEnd = Dimensions.SheetCornerRadius
                         )
                     )
-                    .padding(0.dp, 16.dp, 0.dp, 0.dp)
+                    .padding(0.dp)
             ) {
+
+                MenuOption(
+                    "Refresh",
+                    Icons.Outlined.Refresh,
+                    false
+                ) {
+                    onClose()
+                    onRefresh()
+                }
+
                 MenuOption(
                     "Settings",
                     Icons.Outlined.Settings,
@@ -63,16 +73,16 @@ fun NavSheet(open: Boolean, onClose: () -> Unit, onNavigateToSettings: () -> Uni
     }
 }
 
-@Preview(name = "Filter Sheet Light")
-@Preview("Filter Sheet Dark", uiMode = UI_MODE_NIGHT_YES)
+@Preview(name = "Menu Sheet Light")
+@Preview("Menu Sheet Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun NavSheetPreview() {
+fun MenuSheetPreview() {
     TodotxtAndroidTheme {
         Surface {
-            NavSheet(
+            MenuSheet(
                 true,
                 { },
-                { })
+                { }, onRefresh = {})
         }
     }
 }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -33,7 +32,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     // TODO hoist this into a separate class for maintaining sheet state
     // with open and close methods
     var isFilterSheetOpen by remember { mutableStateOf(false) }
-    var isNavSheetOpen by remember { mutableStateOf(false) }
+    var isMenuSheetOpen by remember { mutableStateOf(false) }
 
     TodotxtAndroidTheme {
         Scaffold(
@@ -43,7 +42,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             bottomBar = {
                 AppBar(
                     { isFilterSheetOpen = true },
-                    { isNavSheetOpen = true }
+                    {  isMenuSheetOpen = true }
                 )
             }
         ) { innerPadding ->
@@ -68,10 +67,14 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 uiState.value.filter
             )
 
-            NavSheet(isNavSheetOpen, { isNavSheetOpen = false }, onNavigateToSettings)
+            MenuSheet(
+                isMenuSheetOpen,
+                { isMenuSheetOpen = false },
+                onNavigateToSettings,
+                { tasksViewModel.loadTasks() })
 
-            if(tasksViewModel.alert != null){
-                BasicAlertDialog({tasksViewModel.clearAlert()}){
+            if (tasksViewModel.alert != null) {
+                BasicAlertDialog({ tasksViewModel.clearAlert() }) {
                     Text(tasksViewModel.alert ?: "")
                 }
             }
