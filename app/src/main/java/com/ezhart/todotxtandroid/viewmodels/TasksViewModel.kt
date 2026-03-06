@@ -1,6 +1,7 @@
 package com.ezhart.todotxtandroid.viewmodels
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -8,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ezhart.todotxtandroid.TodotxtAndroidApplication
@@ -15,29 +17,52 @@ import com.ezhart.todotxtandroid.data.AllTasksFilter
 import com.ezhart.todotxtandroid.data.CompletedFilter
 import com.ezhart.todotxtandroid.data.ContextFilter
 import com.ezhart.todotxtandroid.data.DueFilter
+import com.ezhart.todotxtandroid.data.Filter
 import com.ezhart.todotxtandroid.data.PendingFilter
 import com.ezhart.todotxtandroid.data.ProjectFilter
 import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.dropbox.DropboxService
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class TasksViewModel(private val dropboxService: DropboxService, private val savedStateHandle: SavedStateHandle) :
+data class TaskListUIState(
+    val filteredTasks: List<Task> = listOf(),
+    val filter: Filter = AllTasksFilter,
+    val allContexts: List<String> = listOf(),
+    val allProjects: List<String> = listOf()
+){
+    val filterLabel = filter.display()
+}
+
+class TasksViewModel(
+    private val dropboxService: DropboxService,
+    private val savedStateHandle: SavedStateHandle
+) :
     ViewModel() {
 
-    val tasks: List<Task> = generateFakeTasks(100)
+    var tasks: MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableStateListOf())
+    val filter = MutableStateFlow<Filter>(AllTasksFilter)
+    var isRefreshing by mutableStateOf(false)
 
-    var filter by mutableStateOf<Any>(AllTasksFilter)
-    var filteredTasks by mutableStateOf(filterTasks(tasks, filter))
-    var filterLabel by mutableStateOf(formatFilterLabel(filter))
-    var allContexts by mutableStateOf(value = allContexts(tasks))
-    var allProjects by mutableStateOf(value = allProjects(tasks))
+    val uiState: StateFlow<TaskListUIState> = combine(filter, tasks){
+        filter1, tasks ->
+        TaskListUIState(filterTasks(tasks, filter1),
+            filter1,
+            allContexts(tasks),
+            allProjects(tasks)
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = TaskListUIState())
 
-    fun updateFilter(newFilter: Any) {
-        filter = newFilter
-        filteredTasks = filterTasks(tasks, filter)
-        filterLabel = formatFilterLabel(filter)
+    fun updateFilter(newFilter: Filter) {
+        filter.value = newFilter
     }
 
-    private fun filterTasks(tasks: List<Task>, filter: Any): List<Task> {
+    private fun filterTasks(tasks: List<Task>, filter: Filter): List<Task> {
         val result = when (filter) {
             is ProjectFilter -> tasks.filter { t -> t.projects.contains(filter.project) }
             is ContextFilter -> tasks.filter { t -> t.contexts.contains(filter.context) }
@@ -50,40 +75,25 @@ class TasksViewModel(private val dropboxService: DropboxService, private val sav
         return result
     }
 
-    private fun formatFilterLabel(filter: Any): String {
-        return when (filter) {
-            is ProjectFilter -> "Project ${filter.project}"
-            is DueFilter -> "Due Tasks"
-            is ContextFilter -> "Context ${filter.context}"
-            is PendingFilter -> "Pending Tasks"
-            is CompletedFilter -> "Completed Tasks"
-            else -> "All Tasks"
-        }
-    }
-
-    fun allProjects(tasks: List<Task>): List<String> {
+    private fun allProjects(tasks: List<Task>): List<String> {
         return tasks.flatMap { t -> t.projects }.distinct().sorted()
     }
 
-    fun allContexts(tasks: List<Task>): List<String> {
+    private fun allContexts(tasks: List<Task>): List<String> {
         return tasks.flatMap { t -> t.contexts }.distinct().sorted()
     }
 
-    fun generateFakeTasks(count: Int): List<Task> {
-        val x = mutableListOf<Task>()
-        for (n in 0..count) {
-            if (n % 9 == 0) {
-                x.add(Task("x 2026-02-01 Task $n +shopping"))
-            } else if (n % 5 == 0) {
-                x.add(Task("Task $n @testContext"))
-            } else if (n % 4 == 0) {
-                x.add(Task("Task @testContext2 +project2"))
-            } else {
-                x.add(Task("Task $n"))
-            }
-        }
+    fun loadTasks(shouldSync: Boolean = false) {
+        viewModelScope.launch {
+            isRefreshing = true
+            tasks.value = dropboxService.sync().toMutableList()
 
-        return x
+            // TODO this is a hack, got to figure out how to fix this
+            // if the update is too fast, the refreshing state will get stuck
+            delay(100)
+
+            isRefreshing = false
+        }
     }
 
     companion object {

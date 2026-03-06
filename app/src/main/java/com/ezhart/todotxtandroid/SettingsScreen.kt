@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -49,7 +50,7 @@ fun SettingsScreen() {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .safeContentPadding()
         ) { innerPadding ->
 
             Column(
@@ -60,6 +61,11 @@ fun SettingsScreen() {
                 if (isSignedIn) {
                     Text(accountName)
                     Text(accountEmail)
+
+                    Button(onClick = { settingsViewModel.signOut() }) {
+                        Text("Sign Out")
+                    }
+
                 } else {
                     Button(onClick = { settingsViewModel.beginSignIn(context) }) {
                         Text("Sign In")
@@ -67,10 +73,6 @@ fun SettingsScreen() {
                 }
 
                 SectionTitle("Data/Sync")
-
-
-                SettingItem("todo.txt file path in Dropbox", todoPath)
-
 
                 SettingDialog(
                     "todo.txt file path in Dropbox",

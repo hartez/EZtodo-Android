@@ -30,6 +30,7 @@ import com.ezhart.todotxtandroid.data.AllTasksFilter
 import com.ezhart.todotxtandroid.data.CompletedFilter
 import com.ezhart.todotxtandroid.data.ContextFilter
 import com.ezhart.todotxtandroid.data.DueFilter
+import com.ezhart.todotxtandroid.data.Filter
 import com.ezhart.todotxtandroid.data.PendingFilter
 import com.ezhart.todotxtandroid.data.ProjectFilter
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
@@ -47,7 +48,7 @@ fun FiltersSheet(
     allProjects: List<String>,
     allContexts: List<String>,
     open: Boolean, onClose: () -> Unit,
-    onUpdateFilter: (Any) -> Unit, selectedFilter: Any
+    onUpdateFilter: (Filter) -> Unit, selectedFilter: Any
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true

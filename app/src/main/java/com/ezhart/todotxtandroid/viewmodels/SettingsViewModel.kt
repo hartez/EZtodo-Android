@@ -37,15 +37,22 @@ class SettingsViewModel(
         }
     }
 
+    fun signOut() {
+        dropboxService.signOut()
+        isSignedIn = dropboxService.isAuthenticated()
+        updateAccountInfo()
+    }
+
     fun updateAccountInfo() {
         viewModelScope.launch {
             if (isSignedIn) {
 
-                when(val result = dropboxService.api.getCurrentAccount()){
+                when (val result = dropboxService.api.getCurrentAccount()) {
                     is GetCurrentAccountResult.Error -> {
                         settingsRepository.setAccountDisplayName("")
                         settingsRepository.setAccountEmail("")
                     }
+
                     is GetCurrentAccountResult.Success -> {
                         settingsRepository.setAccountDisplayName(result.account.name.displayName)
                         settingsRepository.setAccountEmail(result.account.email)
@@ -57,7 +64,7 @@ class SettingsViewModel(
         }
     }
 
-    fun updateTodoPath(todoPath:String){
+    fun updateTodoPath(todoPath: String) {
         viewModelScope.launch {
             settingsRepository.setTodoPath(todoPath)
         }
@@ -80,6 +87,4 @@ class SettingsViewModel(
             }
         }
     }
-
-
 }
