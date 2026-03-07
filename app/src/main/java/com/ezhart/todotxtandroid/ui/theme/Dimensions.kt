@@ -1,5 +1,6 @@
 package com.ezhart.todotxtandroid.ui.theme
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 
 object Dimensions {
@@ -8,4 +9,5 @@ object Dimensions {
     val SheetCornerRadius = 8.dp
     val MenuOptionVerticalPadding = 16.dp
     val MenuOptionHorizontalPadding = 16.dp
+    val SettingPadding = PaddingValues(start= 32.dp, top=8.dp, bottom=8.dp, end=16.dp)
 }

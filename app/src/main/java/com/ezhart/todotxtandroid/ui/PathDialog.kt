@@ -87,8 +87,8 @@ fun PathDialog(
     }
 }
 
-@Preview(name = "Filter Sheet Light")
-@Preview("Filter Sheet Dark", uiMode = UI_MODE_NIGHT_YES)
+@Preview(name = "Path Dialog Light")
+@Preview("Path Dialog Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PathDialogPreview() {
     TodotxtAndroidTheme {

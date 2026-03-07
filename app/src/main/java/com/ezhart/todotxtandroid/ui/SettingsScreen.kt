@@ -1,5 +1,6 @@
 package com.ezhart.todotxtandroid.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,13 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -25,11 +27,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 import com.ezhart.todotxtandroid.viewmodels.SettingsViewModel
 
@@ -37,10 +42,6 @@ import com.ezhart.todotxtandroid.viewmodels.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
-
-    // TODO We navigated to this, why isn't there a header of Settings and a back button?
-
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
     val context = LocalContext.current
@@ -52,45 +53,48 @@ fun SettingsScreen() {
 
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
-
     TodotxtAndroidTheme {
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text("Settings") },
                     navigationIcon = {
-                        // Back button icon wrapped in IconButton
                         IconButton(onClick = { backDispatcher?.onBackPressed() }) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back" // Accessibility label
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "Back"
                             )
                         }
-                    })},
+                    })
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .safeContentPadding()
         ) { innerPadding ->
 
             Column(
-                modifier = Modifier.padding(innerPadding)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .padding(innerPadding)
             ) {
                 SectionTitle("Account")
 
                 if (isSignedIn) {
-                    Text(accountName)
-                    Text(accountEmail)
+                    InfoItem(
+                        title = accountName,
+                        value = accountEmail
+                    )
 
-                    // TODO these buttons are hideous, find a nicer style
-                    Button(onClick = { settingsViewModel.signOut() }) {
-                        Text("Sign Out")
+                    SettingButton("Sign Out") {
+                        settingsViewModel.signOut()
                     }
-
                 } else {
-                    Button(onClick = { settingsViewModel.beginSignIn(context) }) {
-                        Text("Sign In")
+                    SettingButton("Sign In") {
+                        settingsViewModel.beginSignIn(context)
                     }
                 }
+
+                HorizontalDivider()
 
                 SectionTitle("Data/Sync")
 
@@ -109,9 +113,11 @@ fun SettingsScreen() {
                         })
                 }
 
+                HorizontalDivider()
+
                 SectionTitle("About")
 
-                SettingItem(
+                InfoItem(
                     title = "Version",
                     value = "0.1.0"
                 )
@@ -124,25 +130,41 @@ fun SettingsScreen() {
 fun SectionTitle(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.tertiary,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimensions.SettingPadding)
     )
 }
 
 @Composable
-fun SettingItem(
+fun InfoItem(
     title: String,
     value: String? = null
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(Dimensions.SettingPadding)
     ) {
-        Text(text = title) // TODO use theme color and text size
-        value?.let {
-            Text(text = it, color = MaterialTheme.colorScheme.primary)
+        Row {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Row {
+            value?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 }
@@ -152,19 +174,33 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
 
     val openDialog = remember { mutableStateOf(false) }
 
-    // TODO Change this to be two rows
-    Row(
+    Column(
         modifier = Modifier
-            .clickable() {
+            .clickable {
                 openDialog.value = true
             }
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = title) // TODO use theme color and text size
-        value?.let {
-            Text(text = it, color = MaterialTheme.colorScheme.primary)
+            .padding(Dimensions.SettingPadding)
+    )
+    {
+        Row(
+            modifier = Modifier,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        Row {
+            value?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 
@@ -175,4 +211,70 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
     }
 }
 
+@Composable
+fun SettingButton(
+    text: String,
+    onClick: () -> Unit
+){
+    Text(
+        text,
+        modifier = Modifier
+            .clickable{onClick()}
+            .fillMaxWidth()
+            .padding(Dimensions.SettingPadding)
+    )
+}
+
 // TODO need a dialog for selecting sync frequencies
+
+@Preview(name = "Info Item Light")
+@Preview("Info Item Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun SectionTitlePreview() {
+    TodotxtAndroidTheme {
+        Surface {
+            SectionTitle(
+                "Data/Sync"
+            )
+        }
+    }
+}
+
+@Preview(name = "Setting Dialog Light")
+@Preview("Setting Dialog Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun SettingDialogPreview() {
+    TodotxtAndroidTheme {
+        Surface {
+            SettingDialog(
+                "Change Task File",
+                value = "/todo/todo.txt"
+            ) {}
+        }
+    }
+}
+
+@Preview(name = "Info Item Light")
+@Preview("Info Item Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun InfoItemPreview() {
+    TodotxtAndroidTheme {
+        Surface {
+            InfoItem(
+                "Version",
+                value = "0.1.0"
+            )
+        }
+    }
+}
+
+@Preview(name = "Setting Button Light")
+@Preview("Setting Button Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun SettingButtonPreview() {
+    TodotxtAndroidTheme {
+        Surface {
+            SettingButton(text = "Sign Out", onClick = {})
+        }
+    }
+}
