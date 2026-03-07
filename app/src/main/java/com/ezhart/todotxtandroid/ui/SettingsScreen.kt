@@ -1,27 +1,28 @@
 package com.ezhart.todotxtandroid.ui
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -33,8 +34,11 @@ import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 import com.ezhart.todotxtandroid.viewmodels.SettingsViewModel
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
+
+    // TODO We navigated to this, why isn't there a header of Settings and a back button?
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -46,8 +50,23 @@ fun SettingsScreen() {
     val accountEmail by settingsViewModel.accountEmail.collectAsStateWithLifecycle("")
     val todoPath by settingsViewModel.todoPath.collectAsStateWithLifecycle("")
 
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
+
     TodotxtAndroidTheme {
         Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Settings") },
+                    navigationIcon = {
+                        // Back button icon wrapped in IconButton
+                        IconButton(onClick = { backDispatcher?.onBackPressed() }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back" // Accessibility label
+                            )
+                        }
+                    })},
             modifier = Modifier
                 .fillMaxSize()
                 .safeContentPadding()
@@ -62,6 +81,7 @@ fun SettingsScreen() {
                     Text(accountName)
                     Text(accountEmail)
 
+                    // TODO these buttons are hideous, find a nicer style
                     Button(onClick = { settingsViewModel.signOut() }) {
                         Text("Sign Out")
                     }
@@ -74,8 +94,11 @@ fun SettingsScreen() {
 
                 SectionTitle("Data/Sync")
 
+                // TODO Background sync frequency
+                // TODO Sync when opened
+
                 SettingDialog(
-                    "todo.txt file path in Dropbox",
+                    "Task File",
                     value = todoPath
                 ) {
                     PathDialog(
@@ -89,7 +112,7 @@ fun SettingsScreen() {
                 SectionTitle("About")
 
                 SettingItem(
-                    title = "TODO.txt Android",
+                    title = "Version",
                     value = "0.1.0"
                 )
             }
@@ -117,7 +140,7 @@ fun SettingItem(
             .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = title)
+        Text(text = title) // TODO use theme color and text size
         value?.let {
             Text(text = it, color = MaterialTheme.colorScheme.primary)
         }
@@ -129,6 +152,7 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
 
     val openDialog = remember { mutableStateOf(false) }
 
+    // TODO Change this to be two rows
     Row(
         modifier = Modifier
             .clickable() {
@@ -138,7 +162,7 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
             .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = title)
+        Text(text = title) // TODO use theme color and text size
         value?.let {
             Text(text = it, color = MaterialTheme.colorScheme.primary)
         }
@@ -151,56 +175,4 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
     }
 }
 
-@Composable
-fun PathDialog(
-    onDismissRequest: () -> Unit,
-    path: String,
-    onConfirmation: (String) -> Unit
-) {
-    // Draw a rectangle shape with rounded corners inside the dialog
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(375.dp)
-            .padding(16.dp),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-
-            Text(
-                text = "Set todo file path in Dropbox"
-            )
-
-            val updated = remember { mutableStateOf(path) }
-            TextField(value = updated.value, { updated.value = it })
-
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                TextButton(
-                    onClick = { onDismissRequest() },
-                    modifier = Modifier.padding(8.dp),
-                ) {
-                    Text("Dismiss")
-                }
-                TextButton(
-                    onClick = {
-                        onConfirmation(updated.value)
-                        onDismissRequest()
-                    },
-                    modifier = Modifier.padding(8.dp),
-                ) {
-                    Text("Confirm")
-                }
-            }
-        }
-    }
-}
+// TODO need a dialog for selecting sync frequencies
