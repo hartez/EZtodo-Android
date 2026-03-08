@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.times
 import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
@@ -90,7 +91,7 @@ fun TaskList(
                 onSelect = { onTaskSelect(it) }
             )
             if (index < tasks.lastIndex)
-                HorizontalDivider(Modifier, thickness = 1.dp, color = Color.Gray)
+                HorizontalDivider()
         }
     }
 }
@@ -107,11 +108,12 @@ fun Header(text: String, taskCount: Int, height: Dp, modifier: Modifier = Modifi
     ) {
 
         val scale = height / Dimensions.TaskListHeaderExpanded
+        val padding = max(32.dp * scale, 8.dp)
 
         Column (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp) // TODO Should have more space to the left of the filter text
+                .padding(padding)
                 .wrapContentHeight(align = Alignment.CenterVertically)
         ){
 

@@ -115,7 +115,7 @@ fun SettingsScreen() {
                         })
                 }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                HorizontalDivider()
 
                 SectionTitle("About")
 
