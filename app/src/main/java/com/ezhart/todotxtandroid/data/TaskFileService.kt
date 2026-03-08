@@ -1,44 +1,36 @@
 package com.ezhart.todotxtandroid.data
 
 import android.content.Context
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
 import java.io.File
 import java.io.FileNotFoundException
 import kotlin.io.path.Path
 
-class TaskFileService(val applicationContext: Context, settings: SettingsRepository) {
+class TaskFileService(val applicationContext: Context, val settings: SettingsRepository) {
 
-    val fileName = settings.todoPath.map { getFileName(it) }.stateIn(
-        kotlinx.coroutines.MainScope(),
-        SharingStarted.Eagerly,
-        ""
-    )
+    suspend fun loadTasksFromStorage(): ReadTaskListResult {
+        try {
+            val fileName = getFileName(getTodoPath())
 
-    fun loadTasksFromStorage(): ReadTaskListResult {
+            val file = File(applicationContext.filesDir, fileName)
 
-        val file = File(applicationContext.filesDir, fileName.value)
-
-        if(file.exists()) {
-
-            try {
-                val lines = file.readLines()
-
-                val tasks = mutableListOf<Task>()
-
-                for (line in lines) {
-                    tasks.add(Task(line))
-                }
-
-                return ReadTaskListResult.Success(tasks)
+            if (!file.exists()) {
+                return ReadTaskListResult.Error(FileNotFoundException(file.path))
             }
-            catch(e: Exception){
-                return ReadTaskListResult.Error(e)
-            }
+
+            val tasks = mutableListOf<Task>()
+
+            file.readLines().mapTo(tasks) { Task(it) }
+
+            return ReadTaskListResult.Success(tasks)
+        } catch (e: Exception) {
+            return ReadTaskListResult.Error(e)
         }
+    }
 
-        return ReadTaskListResult.Error(FileNotFoundException(file.path))
+    suspend fun getTodoPath(): String {
+        return settings.todoPath.take(1).last()
     }
 
     fun getFileName(path: String): String {

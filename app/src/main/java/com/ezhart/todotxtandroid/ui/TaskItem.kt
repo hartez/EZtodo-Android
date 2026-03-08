@@ -1,10 +1,12 @@
 package com.ezhart.todotxtandroid.ui
 
+import android.R
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -50,7 +52,8 @@ fun TaskItem(
             }
 
             Text(
-                text = highlightProjectsAndContexts(task),
+                text = highlightProjectsAndContexts(task, MaterialTheme.colorScheme.onSurfaceVariant),
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = maxLines,
                 overflow = TextOverflow.Ellipsis
@@ -60,7 +63,7 @@ fun TaskItem(
             // (and the due date remains, but in parentheses after the completed date)
             if (dueDate != null) {
                 Text(
-                    text = formatDueDate(dueDate),
+                    text = formatDueDate(dueDate, MaterialTheme.colorScheme.error),
                     style = MaterialTheme.typography.labelMedium,
                 )
             }
@@ -77,14 +80,14 @@ fun displayPriority(priority: Char?): String {
     }
 }
 
-fun highlightProjectsAndContexts(task: Task): AnnotatedString {
+fun highlightProjectsAndContexts(task: Task, color: Color): AnnotatedString {
 
     val body = task.body
     val all = task.projects.union(task.contexts)
 
     val highlightRanges = all.map { s ->
         Range(
-            SpanStyle(fontWeight = FontWeight.Bold),
+            SpanStyle(color = color),
             body.indexOf(s),
             body.indexOf(s) + s.length
         )
@@ -112,7 +115,7 @@ fun highlightProjectsAndContexts(task: Task): AnnotatedString {
 }
 
 
-fun formatDueDate(dueDate: LocalDate): AnnotatedString {
+fun formatDueDate(dueDate: LocalDate, overdueColor: Color): AnnotatedString {
 
     // TODO See if there's something like moment.js we can grab to format the due dates nicer
     // e.g. "Tomorrow", "Monday", etc.
@@ -120,7 +123,7 @@ fun formatDueDate(dueDate: LocalDate): AnnotatedString {
     return buildAnnotatedString {
 
         if (LocalDate.now() > dueDate) {
-            pushStyle(SpanStyle(color = Color.Red))
+            pushStyle(SpanStyle(color = overdueColor))
         }
 
         append(dueDate.toString())

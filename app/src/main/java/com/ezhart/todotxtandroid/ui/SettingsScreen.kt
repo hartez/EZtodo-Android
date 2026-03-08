@@ -2,6 +2,7 @@ package com.ezhart.todotxtandroid.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,6 +69,7 @@ fun SettingsScreen() {
                     })
             },
             modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.surfaceContainerHighest)
                 .fillMaxSize()
                 .safeContentPadding()
         ) { innerPadding ->
@@ -113,7 +115,7 @@ fun SettingsScreen() {
                         })
                 }
 
-                HorizontalDivider()
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 SectionTitle("About")
 
@@ -131,7 +133,7 @@ fun SectionTitle(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.tertiary,
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold,
         modifier = Modifier
             .fillMaxWidth()
@@ -153,7 +155,7 @@ fun InfoItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -162,7 +164,7 @@ fun InfoItem(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -190,7 +192,7 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Row {
@@ -198,7 +200,7 @@ fun SettingDialog(title: String, value: String? = null, content: @Composable (()
                 Text(
                     text = it,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -227,8 +229,8 @@ fun SettingButton(
 
 // TODO need a dialog for selecting sync frequencies
 
-@Preview(name = "Info Item Light")
-@Preview("Info Item Dark", uiMode = UI_MODE_NIGHT_YES)
+@Preview(name = "Section Title Light")
+@Preview("Section Title Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun SectionTitlePreview() {
     TodotxtAndroidTheme {

@@ -44,8 +44,6 @@ data class TaskListUIState(
     val filterLabel = filter.display()
 }
 
-data class PendingAlert(val message: String)
-
 class TasksViewModel(
     private val taskFileService: TaskFileService,
     private val dropboxService: DropboxService,

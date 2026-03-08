@@ -111,7 +111,7 @@ fun Header(text: String, taskCount: Int, height: Dp, modifier: Modifier = Modifi
         Column (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(8.dp) // TODO Should have more space to the left of the filter text
                 .wrapContentHeight(align = Alignment.CenterVertically)
         ){
 

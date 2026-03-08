@@ -7,15 +7,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
@@ -27,12 +30,16 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
     val tasksViewModel: TasksViewModel = viewModel(factory = TasksViewModel.Factory)
 
-    val uiState = tasksViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by tasksViewModel.uiState.collectAsStateWithLifecycle()
 
     // TODO hoist this into a separate class for maintaining sheet state
     // with open and close methods
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var isMenuSheetOpen by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        tasksViewModel.loadTasks()
+    }
 
     TodotxtAndroidTheme {
         Scaffold(
@@ -47,24 +54,27 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             }
         ) { innerPadding ->
 
-            PullToRefreshBox(isRefreshing = tasksViewModel.isRefreshing, onRefresh = {
-                tasksViewModel.loadTasks()
-            }) {
+            PullToRefreshBox(
+                isRefreshing = tasksViewModel.isRefreshing,
+                onRefresh = {
+                    tasksViewModel.loadTasks()
+                }, modifier = Modifier.padding(innerPadding)
+            ) {
                 TaskList(
-                    uiState.value.filteredTasks, uiState.value.filterLabel,
+                    uiState.filteredTasks, uiState.filterLabel,
                     { },
                     modifier = Modifier
-                        .padding(innerPadding)
+                        //.padding(32.dp)
                 )
             }
 
             FiltersSheet(
-                uiState.value.allProjects,
-                uiState.value.allContexts,
+                uiState.allProjects,
+                uiState.allContexts,
                 isFilterSheetOpen,
                 { isFilterSheetOpen = false },
                 onUpdateFilter = tasksViewModel::updateFilter,
-                uiState.value.filter
+                uiState.filter
             )
 
             MenuSheet(
