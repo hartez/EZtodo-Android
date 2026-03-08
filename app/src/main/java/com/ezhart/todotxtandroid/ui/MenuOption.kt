@@ -39,8 +39,7 @@ fun MenuOption(text: String, icon: ImageVector? = null, selected: Boolean, onSel
                     onSelected()
                 }
             }
-            .padding(Dimensions.MenuOptionHorizontalPadding,
-                Dimensions.MenuOptionVerticalPadding)
+            .padding(Dimensions.MenuOptionPadding)
 
     )
     {

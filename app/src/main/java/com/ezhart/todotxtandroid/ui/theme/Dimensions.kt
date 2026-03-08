@@ -7,7 +7,6 @@ object Dimensions {
     val TaskListHeaderExpanded = 150.dp
     val TaskListHeaderCompact = 50.dp
     val SheetCornerRadius = 8.dp
-    val MenuOptionVerticalPadding = 16.dp
-    val MenuOptionHorizontalPadding = 16.dp
+    val MenuOptionPadding = PaddingValues(16.dp, 16.dp, 16.dp, 16.dp)
     val SettingPadding = PaddingValues(start= 32.dp, top=8.dp, bottom=8.dp, end=16.dp)
 }

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 
 @Composable
@@ -33,16 +34,14 @@ fun ExpandingOption(
     selectedOption: String? = null,
     onSelected: (String) -> Unit
 ) {
-    Column(
-
-    ) {
+    Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
                     onToggle()
                 }
-                .padding(8.dp, 8.dp)
+                .padding(Dimensions.MenuOptionPadding)
         )
         {
             val expansionIcon = when (expanded) {
@@ -66,10 +65,8 @@ fun ExpandingOption(
         }
 
         if (expanded) {
-            LazyColumn(
-
-            ) {
-                items(options) { option ->
+            Column {
+                for(option in options){
                     MenuOption(
                         text = option,
                         null,
@@ -80,8 +77,6 @@ fun ExpandingOption(
         }
     }
 }
-
-// TODO The bottom of the expanded options falls behind the system controls, need to futz with safe area settings
 
 @Preview(name = "Expanding Option Light")
 @Preview("Expanding Option Dark", uiMode = UI_MODE_NIGHT_YES)
