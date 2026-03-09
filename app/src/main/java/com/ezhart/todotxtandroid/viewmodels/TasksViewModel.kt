@@ -84,11 +84,18 @@ class TasksViewModel(
         return tasks.flatMap { t -> t.contexts }.distinct().sorted()
     }
 
-    fun showAlert(message: String){
+    fun addTask(task: String) {
+        viewModelScope.launch {
+            tasks.value.add(Task(task))
+            taskFileService.writeTasksToStorage(tasks.value)
+        }
+    }
+
+    fun showAlert(message: String) {
         alert = message
     }
 
-    fun clearAlert(){
+    fun clearAlert() {
         alert = null
     }
 

@@ -29,6 +29,15 @@ class TaskFileService(val applicationContext: Context, val settings: SettingsRep
         }
     }
 
+    suspend fun writeTasksToStorage(taskList:List<Task>)  {
+            val fileName = getFileName(getTodoPath())
+            val file = File(applicationContext.filesDir, fileName)
+
+            val textList = taskList.joinToString(transform = {task -> task.task}, separator = "\n")
+
+            file.writeText(textList)
+    }
+
     suspend fun getTodoPath(): String {
         return settings.todoPath.take(1).last()
     }
@@ -59,3 +68,4 @@ sealed interface ReadTaskListResult {
     class Success(val tasks: List<Task>) : ReadTaskListResult
     class Error(val e: Exception) : ReadTaskListResult
 }
+

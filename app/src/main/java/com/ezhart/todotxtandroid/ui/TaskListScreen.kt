@@ -30,6 +30,8 @@ import com.ezhart.todotxtandroid.viewmodels.TasksViewModel
 @Composable
 fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
+    // TODO new tasks aren't showing up at the end of the list right away, I have to scroll up a bit and back down
+
     val tasksViewModel: TasksViewModel = viewModel(factory = TasksViewModel.Factory)
 
     val uiState by tasksViewModel.uiState.collectAsStateWithLifecycle()
@@ -90,7 +92,10 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 onNavigateToSettings,
                 { tasksViewModel.loadTasks() })
 
-            TaskCreatorSheet(isAdding, {isAdding = false})
+            TaskCreatorSheet(
+                isAdding,
+                { isAdding = false },
+                { task -> tasksViewModel.addTask(task) })
 
             if (tasksViewModel.alert != null) {
                 BasicAlertDialog({ tasksViewModel.clearAlert() }) {

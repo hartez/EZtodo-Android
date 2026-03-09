@@ -38,7 +38,8 @@ import java.time.LocalDate
 @Composable
 fun TaskCreatorSheet(
     open: Boolean,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onAdd: (String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -62,7 +63,7 @@ fun TaskCreatorSheet(
                     TextField(
                         value = taskText.value,
                         onValueChange = { taskText.value = it },
-                        placeholder = { Text("enter task") },
+                        placeholder = { Text("enter task", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         minLines = 2,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = containerColor,
@@ -76,7 +77,8 @@ fun TaskCreatorSheet(
 
                     IconButton(
                         onClick = {
-                            // TODO taskViewModel.add()
+                            onAdd(taskText.value)
+                            taskText.value = ""
                         },
                         modifier = Modifier.align(Alignment.CenterVertically)
                     ) {
@@ -151,7 +153,7 @@ fun TaskCreatorSheet(
 fun TaskCreatorPreview() {
     TodotxtAndroidTheme {
         Surface {
-            TaskCreatorSheet(true, {})
+            TaskCreatorSheet(true, {}, {})
         }
     }
 }
