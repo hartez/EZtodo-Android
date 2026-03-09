@@ -58,7 +58,6 @@ class DropboxService(
 
     suspend fun sync() {
         // TODO See comment below, the sync process needs to be fleshed out
-        // TODO This service also needs the settings repository
         // TODO force lower path
 
         downloadTaskFile(todoPath.value)

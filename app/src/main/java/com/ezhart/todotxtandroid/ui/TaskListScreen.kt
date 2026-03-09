@@ -68,7 +68,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             PullToRefreshBox(
                 isRefreshing = tasksViewModel.isRefreshing,
                 onRefresh = {
-                    tasksViewModel.loadTasks()
+                    tasksViewModel.loadTasks(true)
                 }, modifier = Modifier.padding(innerPadding)
             ) {
                 TaskList(
