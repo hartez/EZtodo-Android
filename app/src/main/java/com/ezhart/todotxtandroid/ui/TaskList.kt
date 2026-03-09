@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -75,6 +76,9 @@ fun TaskList(
             }
         }
     }
+
+    // TODO Keep on eye on scrollIndicatorState APIs (https://michaelevans.org/blog/2026/02/11/custom-scroll-indicators-in-jetpack-compose-foundation/)
+    // so we can add proper scroll indicators to the task list
 
     val headerHeight = with(LocalDensity.current) { (headerHeightPx.floatValue).toDp() }
 
