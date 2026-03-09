@@ -123,27 +123,21 @@ data class Task(val task: String) {
             return Priority(result.value[1])
         }
 
-        fun editPriority(body: String, taskPriority: TaskPriority): String {
+        fun editPriority(body: String, newPriority: TaskPriority): String {
 
             val currentPriority = parsePriority(body)
 
-            if(taskPriority == currentPriority){
-                return body
+            return if(currentPriority == None){
+                when(newPriority){
+                    None -> body
+                    is Priority -> "(${newPriority.letter}) $body"
+                }
+            } else {
+                when(newPriority){
+                    None -> body.substring(4)
+                    is Priority -> "(${newPriority.letter}) ${body.substring(4)}"
+                }
             }
-
-            if(currentPriority is Priority && taskPriority is None){
-                return body.substring(4)
-            }
-
-            if(currentPriority is None && taskPriority is Priority){
-                return "(${taskPriority.letter}) $body"
-            }
-
-            if(taskPriority is Priority){
-                return "(${taskPriority.letter}) ${body.substring(4)}"
-            }
-
-            return body
         }
     }
 }

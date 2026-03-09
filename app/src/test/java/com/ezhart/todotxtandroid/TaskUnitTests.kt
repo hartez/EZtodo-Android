@@ -1,5 +1,7 @@
 package com.ezhart.todotxtandroid
 
+import com.ezhart.todotxtandroid.data.None
+import com.ezhart.todotxtandroid.data.Priority
 import com.ezhart.todotxtandroid.data.Task
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -13,28 +15,29 @@ class TaskUnitTests {
         val taskData = "(A) This is a test task"
 
         val task1 = Task(taskData)
-        assertEquals('A', task1.taskPriority)
+        val expectedPriority = Priority('A')
+        assertEquals(expectedPriority, task1.taskPriority)
 
         // Validate the helper method
-        assertEquals('A', Task.parsePriority(taskData))
+        assertEquals(expectedPriority, Task.parsePriority(taskData))
     }
 
     @Test
     fun task_priority_must_be_uppercase() {
         val task2 = Task("(a) This is a test task")
-        assertEquals(null, task2.taskPriority)
+        assertEquals(None, task2.taskPriority)
     }
 
     @Test
     fun task_priority_must_be_first() {
         val task2 = Task(" (A) test")
-        assertEquals(null, task2.taskPriority)
+        assertEquals(None, task2.taskPriority)
     }
 
     @Test
     fun task_priority_must_be_letter() {
         val task1 = Task("(2) This is a test task")
-        assertEquals(null, task1.taskPriority)
+        assertEquals(None, task1.taskPriority)
     }
 
     @Test
