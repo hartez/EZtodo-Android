@@ -1,9 +1,9 @@
 package com.ezhart.todotxtandroid.data
 
 sealed class TaskPriority{
-    fun display():String{
+    fun display(noneLabel: String = " "):String{
         return when (this) {
-            None -> " "
+            None -> noneLabel
             is Priority -> "${this.letter}"
         }
     }

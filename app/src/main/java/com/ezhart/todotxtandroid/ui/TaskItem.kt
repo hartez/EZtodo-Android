@@ -1,6 +1,7 @@
 package com.ezhart.todotxtandroid.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +30,9 @@ fun TaskItem(
     onSelect: (Task) -> Unit
 ) {
     Row(
+
         modifier = Modifier
+            .clickable(onClick = {onSelect(task)})
             .fillMaxWidth()
             .padding(0.dp, 16.dp)
     ) {

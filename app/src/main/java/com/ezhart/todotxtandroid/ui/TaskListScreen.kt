@@ -21,8 +21,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 import com.ezhart.todotxtandroid.viewmodels.TasksViewModel
 
@@ -39,6 +41,9 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var isMenuSheetOpen by remember { mutableStateOf(false) }
     var isAdding by remember { mutableStateOf(false) }
+
+    val openDetailsDialog = remember { mutableStateOf(false) }
+    val selectedTask = remember { mutableStateOf<Task?>(null) }
 
     LaunchedEffect(Unit) {
         tasksViewModel.loadTasks()
@@ -73,7 +78,10 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             ) {
                 TaskList(
                     uiState.filteredTasks, uiState.filterLabel,
-                    { }
+                    {
+                        selectedTask.value = it
+                        openDetailsDialog.value = true
+                    }
                 )
             }
 
@@ -100,6 +108,17 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             if (tasksViewModel.alert != null) {
                 BasicAlertDialog({ tasksViewModel.clearAlert() }) {
                     Text(tasksViewModel.alert ?: "")
+                }
+            }
+
+            if (openDetailsDialog.value && selectedTask.value != null) {
+                val dismissRequest = {
+                    openDetailsDialog.value = false
+                    selectedTask.value = null
+                }
+
+                Dialog(onDismissRequest = dismissRequest) {
+                    DetailsDialog(dismissRequest, selectedTask.value!!)
                 }
             }
         }
