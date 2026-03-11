@@ -1,12 +1,6 @@
 package com.ezhart.todotxtandroid.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.End
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,10 +18,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,7 +32,8 @@ import java.time.LocalDate
 @Composable
 fun DetailsDialog(
     onDismissRequest: () -> Unit,
-    task: Task
+    task: Task,
+    onEditRequest: () -> Unit
 ) {
 
     //gist.github.com/fvilarino/ebb3ba8cd643246671ad5ea9b5476d8c
@@ -100,11 +93,7 @@ fun DetailsDialog(
                         )
                     }
 
-                    // TODO implement edit (rename taskcreatorsheet to taskeditor),
-                    // pop it up (populated) for this task (it'll need a selected task
-                    // parameter; if it's null then we're creating a new task, it it's
-                    // not then when we update we're replacing the old one)
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {onEditRequest()}) {
                         Icon(
                             imageVector = Icons.Outlined.Edit,
                             contentDescription = "Edit"
@@ -142,7 +131,8 @@ fun DetailsDialogPreview() {
         Surface {
             DetailsDialog(
                 { },
-                Task("2025-06-04 Buy apples @shopping +pie due:2025-06-06")
+                Task("2025-06-04 Buy apples @shopping +pie due:2025-06-06"),
+                {}
             )
         }
     }

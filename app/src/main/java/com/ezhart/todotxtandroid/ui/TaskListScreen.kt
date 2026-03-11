@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 import com.ezhart.todotxtandroid.viewmodels.TasksViewModel
 
@@ -32,28 +31,25 @@ import com.ezhart.todotxtandroid.viewmodels.TasksViewModel
 @Composable
 fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
-    // TODO new tasks aren't showing up at the end of the list right away, I have to scroll up a bit and back down
+    // TODO new tasks aren't showing up at the end of the list right away; have to scroll up a bit and back down
+    // Something with the tasks stateflow isn't working as expected
 
-    val tasksViewModel: TasksViewModel = viewModel(factory = TasksViewModel.Factory)
+    val viewModel: TasksViewModel = viewModel(factory = TasksViewModel.Factory)
 
-    val uiState by tasksViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val editorUIState by viewModel.editorUIState.collectAsStateWithLifecycle()
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var isMenuSheetOpen by remember { mutableStateOf(false) }
-    var isAdding by remember { mutableStateOf(false) }
-
-    val openDetailsDialog = remember { mutableStateOf(false) }
-    val selectedTask = remember { mutableStateOf<Task?>(null) }
 
     LaunchedEffect(Unit) {
-        tasksViewModel.loadTasks()
+        viewModel.loadTasks()
     }
 
     TodotxtAndroidTheme {
         Scaffold(
             contentWindowInsets = WindowInsets.statusBars,
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             bottomBar = {
                 AppBar(
                     { isFilterSheetOpen = true },
@@ -63,7 +59,9 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { isAdding = true },
+                    onClick = {
+                        viewModel.editNewTask()
+                    },
                 ) {
                     Icon(Icons.Outlined.Add, "Add Task")
                 }
@@ -71,17 +69,14 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
         ) { innerPadding ->
 
             PullToRefreshBox(
-                isRefreshing = tasksViewModel.isRefreshing,
+                isRefreshing = viewModel.isRefreshing,
                 onRefresh = {
-                    tasksViewModel.loadTasks(true)
+                    viewModel.loadTasks(true)
                 }, modifier = Modifier.padding(innerPadding)
             ) {
                 TaskList(
                     uiState.filteredTasks, uiState.filterLabel,
-                    {
-                        selectedTask.value = it
-                        openDetailsDialog.value = true
-                    }
+                    { viewModel.selectTask(it) }
                 )
             }
 
@@ -90,7 +85,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 uiState.allContexts,
                 isFilterSheetOpen,
                 { isFilterSheetOpen = false },
-                onUpdateFilter = tasksViewModel::updateFilter,
+                onUpdateFilter = viewModel::updateFilter,
                 uiState.filter
             )
 
@@ -98,27 +93,30 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 isMenuSheetOpen,
                 { isMenuSheetOpen = false },
                 onNavigateToSettings,
-                { tasksViewModel.loadTasks() })
+                { viewModel.loadTasks() })
 
-            TaskCreatorSheet(
-                isAdding,
-                { isAdding = false },
-                { task -> tasksViewModel.addTask(task) })
+            TaskEditor(
+                editorUIState,
+                {
+                    viewModel.closeEditor()
+                },
+                {
+                    viewModel.commitTaskChanges()
+                }
+            )
 
-            if (tasksViewModel.alert != null) {
-                BasicAlertDialog({ tasksViewModel.clearAlert() }) {
-                    Text(tasksViewModel.alert ?: "")
+            if (viewModel.alert != null) {
+                BasicAlertDialog({ viewModel.clearAlert() }) {
+                    Text(viewModel.alert ?: "")
                 }
             }
 
-            if (openDetailsDialog.value && selectedTask.value != null) {
-                val dismissRequest = {
-                    openDetailsDialog.value = false
-                    selectedTask.value = null
-                }
-
-                Dialog(onDismissRequest = dismissRequest) {
-                    DetailsDialog(dismissRequest, selectedTask.value!!)
+            if (viewModel.isDetailsOpen) {
+                Dialog(onDismissRequest = { viewModel.dismissDetails() }) {
+                    DetailsDialog(
+                        { viewModel.dismissDetails() },
+                        viewModel.selectedTask!!,
+                        onEditRequest = { viewModel.editSelectedTask() })
                 }
             }
         }

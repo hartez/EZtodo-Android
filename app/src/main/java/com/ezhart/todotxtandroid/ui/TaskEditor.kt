@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.Done
@@ -23,8 +26,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,24 +33,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
+import com.ezhart.todotxtandroid.viewmodels.TaskEditorMode
+import com.ezhart.todotxtandroid.viewmodels.TaskEditorUIState
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskCreatorSheet(
-    open: Boolean,
+fun TaskEditor(
+    editorState: TaskEditorUIState,
     onClose: () -> Unit,
-    onAdd: (String) -> Unit
+    onSubmit: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
 
-    val containerColor = MaterialTheme.colorScheme.primaryContainer
+    if (editorState.isOpen) {
 
-    val taskText = remember { mutableStateOf("") }
+        val containerColor = MaterialTheme.colorScheme.primaryContainer
+        val textEditorState = editorState.textEditorState
 
-    if (open) {
         ModalBottomSheet(
             onDismissRequest = { onClose() },
             sheetState = sheetState,
@@ -61,10 +64,13 @@ fun TaskCreatorSheet(
 
                 Row {
                     TextField(
-                        value = taskText.value,
-                        onValueChange = { taskText.value = it },
-                        placeholder = { Text("enter task", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                        minLines = 2,
+                        state = textEditorState,
+                        placeholder = {
+                            Text(
+                                "enter task", color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 2),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = containerColor,
                             unfocusedContainerColor = containerColor,
@@ -76,15 +82,11 @@ fun TaskCreatorSheet(
                     )
 
                     IconButton(
-                        onClick = {
-                            onAdd(taskText.value)
-                            taskText.value = ""
-                        },
+                        onClick = onSubmit,
                         modifier = Modifier.align(Alignment.CenterVertically)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.PostAdd,
-                            contentDescription = "Create"
+                            imageVector = Icons.Outlined.PostAdd, contentDescription = "Create"
                         )
                     }
                 }
@@ -96,11 +98,9 @@ fun TaskCreatorSheet(
                     IconButton(
                         onClick = {
                             // TODO Create a priorities dialog popup
-                        }
-                    ) {
+                        }) {
                         Icon(
-                            imageVector = Icons.Outlined.Flag,
-                            contentDescription = "Priority"
+                            imageVector = Icons.Outlined.Flag, contentDescription = "Priority"
                         )
                     }
 
@@ -117,27 +117,31 @@ fun TaskCreatorSheet(
 
                     IconButton(
                         onClick = {
-                            taskText.value = Task.editDueDate(taskText.value, LocalDate.now())
+                            textEditorState.setTextAndPlaceCursorAtEnd(
+                                Task.editDueDate(
+                                    textEditorState.text.toString(),
+                                    LocalDate.now()
+                                )
+                            )
                         },
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Today,
-                            contentDescription = "Due"
+                            imageVector = Icons.Outlined.Today, contentDescription = "Due"
                         )
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    IconButton(
-                        onClick = {
-                            // TODO Need a task edit for completed
-                            // This one will also do a taskViewModel.add()
+                    if (editorState.mode == TaskEditorMode.Create) {
+                        IconButton(
+                            onClick = {
+                                // TODO Need a task edit for completed
+                                // This one will also do a taskViewModel.add()
+                            }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Done, contentDescription = "Done"
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Done,
-                            contentDescription = "Done"
-                        )
                     }
 
                 }
@@ -147,13 +151,44 @@ fun TaskCreatorSheet(
 }
 
 
-@Preview(name = "Task Item Light")
-@Preview("Task Item Dark", uiMode = UI_MODE_NIGHT_YES)
+@Preview(name = "New Task Light")
+@Preview("New Task Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun TaskCreatorPreview() {
+fun NewTaskPreview() {
+
+    val state = TaskEditorUIState(
+        true,
+        TaskEditorMode.Create,
+        TextFieldState()
+    )
+
     TodotxtAndroidTheme {
         Surface {
-            TaskCreatorSheet(true, {}, {})
+            TaskEditor(
+                state, {}, {}
+            )
+        }
+    }
+}
+
+@Preview(name = "Edit Task Light")
+@Preview("Edit Task Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun EditTaskPreview() {
+
+    val state = TaskEditorUIState(
+        true,
+        TaskEditorMode.Edit,
+        TextFieldState()
+    ) // TODO Set up task text for this to display
+
+    TodotxtAndroidTheme {
+        Surface {
+            TaskEditor(
+                state,
+                {},
+                {}
+            )
         }
     }
 }

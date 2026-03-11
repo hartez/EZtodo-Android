@@ -1,6 +1,9 @@
 package com.ezhart.todotxtandroid.viewmodels
 
 import android.util.Log
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +34,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class TasksViewModel(
     private val taskFileService: TaskFileService,
@@ -41,15 +46,25 @@ class TasksViewModel(
 ) :
     ViewModel() {
 
-    var tasks: MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableStateListOf())
-    val filter = MutableStateFlow<Filter>(AllTasksFilter)
     var isRefreshing by mutableStateOf(false)
-    var alert by mutableStateOf<String?>(null)
+        private set
 
-    val uiState: StateFlow<TaskListUIState> = combine(filter, tasks) { filter1, tasks ->
+    var selectedTask by mutableStateOf<Task?>(null)
+        private set
+
+    var isDetailsOpen by mutableStateOf(false)
+        private set
+
+    var alert by mutableStateOf<String?>(null)
+        private set
+
+    private var tasks: MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableStateListOf())
+    private val filter = MutableStateFlow<Filter>(AllTasksFilter)
+
+    val uiState: StateFlow<TaskListUIState> = combine(filter, tasks) { filter, tasks ->
         TaskListUIState(
-            filterTasks(tasks, filter1),
-            filter1,
+            filterTasks(tasks, filter),
+            filter,
             allContexts(tasks),
             allProjects(tasks)
         )
@@ -59,35 +74,84 @@ class TasksViewModel(
         initialValue = TaskListUIState()
     )
 
+    private val isEditorOpen = MutableStateFlow(false)
+    private val newTaskEditor = TextFieldState()
+    private val existingTaskEditor = TextFieldState()
+    private var editorMode : TaskEditorMode = TaskEditorMode.Create
+
+    val editorUIState: StateFlow<TaskEditorUIState> = isEditorOpen.map { it ->
+        TaskEditorUIState(
+            it, editorMode, when (editorMode) {
+                TaskEditorMode.Create -> newTaskEditor
+                TaskEditorMode.Edit -> existingTaskEditor
+            }
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        initialValue = TaskEditorUIState(
+            isEditorOpen.value,
+            editorMode,
+            newTaskEditor
+        )
+    )
+
+    fun selectTask(task: Task) {
+        selectedTask = task
+        showDetails()
+    }
+
+    fun clearTaskSelection() {
+        selectedTask = null
+    }
+
+    fun showDetails(){
+        isDetailsOpen = true
+    }
+
+    fun dismissDetails(){
+        isDetailsOpen = false
+        clearTaskSelection()
+    }
+
     fun updateFilter(newFilter: Filter) {
         filter.value = newFilter
     }
 
-    private fun filterTasks(tasks: List<Task>, filter: Filter): List<Task> {
-        val result = when (filter) {
-            is ProjectFilter -> tasks.filter { t -> t.projects.contains(filter.project) }
-            is ContextFilter -> tasks.filter { t -> t.contexts.contains(filter.context) }
-            is DueFilter -> tasks.filter { t -> t.dueDate != null }
-            is PendingFilter -> tasks.filter { t -> !t.completed }
-            is CompletedFilter -> tasks.filter { t -> t.completed }
-            else -> tasks
-        }
-
-        return result
+    fun editSelectedTask() {
+        isDetailsOpen = false
+        existingTaskEditor.setTextAndPlaceCursorAtEnd(selectedTask!!.task) // TODO this should strip the created date from the text
+        editorMode = TaskEditorMode.Edit
+        isEditorOpen.value = true
     }
 
-    private fun allProjects(tasks: List<Task>): List<String> {
-        return tasks.flatMap { t -> t.projects }.distinct().sorted()
+    fun editNewTask() {
+        editorMode = TaskEditorMode.Create
+        isEditorOpen.value = true
     }
 
-    private fun allContexts(tasks: List<Task>): List<String> {
-        return tasks.flatMap { t -> t.contexts }.distinct().sorted()
+    fun closeEditor() {
+        isEditorOpen.value = false
     }
 
-    fun addTask(task: String) {
-        viewModelScope.launch {
-            tasks.value.add(Task(task))
-            taskFileService.writeTasksToStorage(tasks.value)
+    fun commitTaskChanges() {
+        if (editorMode == TaskEditorMode.Create) {
+            val toAdd = newTaskEditor.text.toString()
+
+            newTaskEditor.clearText()
+            isEditorOpen.value = false
+
+            addTask(toAdd)
+        } else {
+            val oldTask = selectedTask!!
+            val updatedTask = existingTaskEditor.text.toString()
+
+            existingTaskEditor.clearText()
+            isEditorOpen.value = false
+            clearTaskSelection()
+            editorMode = TaskEditorMode.Create
+
+            editTask(oldTask, updatedTask)
         }
     }
 
@@ -124,6 +188,59 @@ class TasksViewModel(
 
             isRefreshing = false
         }
+    }
+
+    private fun filterTasks(tasks: List<Task>, filter: Filter): List<Task> {
+        val result = when (filter) {
+            is ProjectFilter -> tasks.filter { t -> t.projects.contains(filter.project) }
+            is ContextFilter -> tasks.filter { t -> t.contexts.contains(filter.context) }
+            is DueFilter -> tasks.filter { t -> t.dueDate != null }
+            is PendingFilter -> tasks.filter { t -> !t.completed }
+            is CompletedFilter -> tasks.filter { t -> t.completed }
+            else -> tasks
+        }
+
+        return result
+    }
+
+    private fun allProjects(tasks: List<Task>): List<String> {
+        return tasks.flatMap { t -> t.projects }.distinct().sorted()
+    }
+
+    private fun allContexts(tasks: List<Task>): List<String> {
+        return tasks.flatMap { t -> t.contexts }.distinct().sorted()
+    }
+
+    private fun addTask(task: String) {
+        viewModelScope.launch {
+            // Make sure the created date is in the task
+            val taskText = Task.insertCreatedDate(task, LocalDate.now())
+
+            tasks.value.add(Task(taskText))
+            taskFileService.writeTasksToStorage(tasks.value)
+        }
+    }
+
+    private fun editTask(task: Task, updated: String) {
+        viewModelScope.launch {
+            val taskList = tasks.value
+            val taskText =
+                when (val created = task.createdDate) {
+                    null -> updated
+                    else -> Task.insertCreatedDate(updated, created)
+                }
+
+            val updatedTask = Task(taskText)
+            val index = taskList.indexOf(task)
+            taskList[index] = updatedTask
+        }
+    }
+
+    // TODO implement
+    fun removeTask(task: Task){
+        // If this is the selected task, clear that
+        // remove from tasks
+        // write to storage
     }
 
     companion object {

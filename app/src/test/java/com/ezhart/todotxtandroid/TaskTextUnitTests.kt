@@ -51,7 +51,7 @@ class TaskTextUnitTests {
     fun add_tag(){
         val task = "This is a test task"
         val project = "+project"
-        val updatedTask = Task.editTags(body = task, project)
+        val updatedTask = Task.editTags(task = task, project)
 
         assertTrue(Task(updatedTask).projects.contains(project))
     }
@@ -61,7 +61,7 @@ class TaskTextUnitTests {
         val task = "This is a test task"
         val project = "+project"
         val context = "@context"
-        val updatedTaskText = Task.editTags(body = task, project, context)
+        val updatedTaskText = Task.editTags(task = task, project, context)
         val updatedTask = Task(updatedTaskText)
 
         assertTrue(updatedTask.projects.contains(project))
@@ -72,7 +72,7 @@ class TaskTextUnitTests {
     fun replace_tag(){
         val task = "This is a test task +oldProject"
         val project = "+project"
-        val updatedTaskText = Task.editTags(body = task, project)
+        val updatedTaskText = Task.editTags(task = task, project)
         val updatedTask = Task(updatedTaskText)
 
         assertTrue(updatedTask.projects.contains(project))
@@ -84,7 +84,7 @@ class TaskTextUnitTests {
         val task = "This is a test @oldContext task +oldProject"
         val project = "+project"
         val context = "@context"
-        val updatedTaskText = Task.editTags(body = task, context, project)
+        val updatedTaskText = Task.editTags(task = task, context, project)
         val updatedTask = Task(updatedTaskText)
 
         assertTrue(updatedTask.projects.contains(project))
@@ -92,5 +92,41 @@ class TaskTextUnitTests {
 
         assertTrue(updatedTask.contexts.contains(context))
         assertFalse(updatedTask.contexts.contains("@oldContext"))
+    }
+
+    @Test
+    fun add_created_date_to_input(){
+        val task = "This is a test"
+        val date = LocalDate.of(2025, 10, 7)
+        val updatedTaskText = Task.insertCreatedDate(task, date)
+
+        assertEquals( "2025-10-07 This is a test", updatedTaskText)
+
+        val updatedTask = Task(updatedTaskText)
+        assertEquals(date, updatedTask.createdDate)
+    }
+
+    @Test
+    fun add_created_date_to_input_with_priority(){
+        val task = "(B) This is a test"
+        val date = LocalDate.of(2025, 10, 7)
+        val updatedTaskText = Task.insertCreatedDate(task, date)
+
+        assertEquals( "(B) 2025-10-07 This is a test", updatedTaskText)
+
+        val updatedTask = Task(updatedTaskText)
+        assertEquals(date, updatedTask.createdDate)
+    }
+
+    @Test
+    fun add_created_date_to_completed_task_input(){
+        val task = "x 2026-05-05 This is a test"
+        val date = LocalDate.of(2025, 10, 7)
+        val updatedTaskText = Task.insertCreatedDate(task, date)
+
+        assertEquals( "x 2026-05-05 2025-10-07 This is a test", updatedTaskText)
+
+        val updatedTask = Task(updatedTaskText)
+        assertEquals(date, updatedTask.createdDate)
     }
 }
