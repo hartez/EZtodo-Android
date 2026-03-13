@@ -25,7 +25,7 @@ data class Task(val task: String) {
         createdDate = tryParseDate(groups[CREATED_DATE]?.value)
         completed = groups[DONE] != null
 
-        taskPriority = when(val pri = groups[PRIORITY]?.value[0]) {
+        taskPriority = when (val pri = groups[PRIORITY]?.value[0]) {
             is Char -> Priority(pri)
             else -> None
         }
@@ -80,17 +80,17 @@ data class Task(val task: String) {
             return matches.map { t -> t.value.trim() }.toSet()
         }
 
-        fun editTags(task:String, vararg tags:String) : String{
+        fun editTags(task: String, vararg tags: String): String {
             var result = task
 
             val projects = parseProjects(task)
             val contexts = parseContexts(task)
 
-            for(project in projects){
+            for (project in projects) {
                 result = result.replace(project, "")
             }
 
-            for(context in contexts){
+            for (context in contexts) {
                 result = result.replace(context, "")
             }
 
@@ -108,10 +108,10 @@ data class Task(val task: String) {
             }
         }
 
-        fun editDueDate(task: String, dueDate: LocalDate ) : String{
+        fun editDueDate(task: String, dueDate: LocalDate): String {
             val currentDueDate = tryParseDate(parseMetadata(task)["due"])
 
-            if(currentDueDate != null){
+            if (currentDueDate != null) {
                 return task.replace("due:${currentDueDate}", "due:${dueDate}")
             }
 
@@ -127,31 +127,46 @@ data class Task(val task: String) {
 
             val currentPriority = parsePriority(task)
 
-            return if(currentPriority == None){
-                when(newPriority){
+            return if (currentPriority == None) {
+                when (newPriority) {
                     None -> task
                     is Priority -> "(${newPriority.letter}) $task"
                 }
             } else {
-                when(newPriority){
+                when (newPriority) {
                     None -> task.substring(4)
                     is Priority -> "(${newPriority.letter}) ${task.substring(4)}"
                 }
             }
         }
 
-        fun insertCreatedDate(task:String, createdDate: LocalDate): String {
-            if(task.startsWith('x')){
+        fun insertCreatedDate(task: String, createdDate: LocalDate): String {
+            if (task.startsWith('x')) {
                 return "${task.substring(0, 12)} $createdDate ${task.substring(13)}"
             }
 
             val priority = parsePriority(task)
 
-            return if(priority == None){
+            return if (priority == None) {
                 "$createdDate $task"
-            }
-            else{
+            } else {
                 "(${priority.display()}) $createdDate ${task.substring(4)}"
+            }
+        }
+
+        fun removeCreatedDate(task: String): String {
+            val parsedTask = Task(task)
+
+            if (parsedTask.createdDate == null) {
+                return task
+            }
+
+            return if (parsedTask.completed) {
+                task.substring(0, 13) + task.substring(24)
+            } else if (parsedTask.taskPriority != None) {
+                task.substring(0, 4) + task.substring(15)
+            } else {
+                task.substring(11)
             }
         }
     }

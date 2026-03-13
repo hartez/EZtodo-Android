@@ -120,7 +120,10 @@ class TasksViewModel(
 
     fun editSelectedTask() {
         isDetailsOpen = false
-        existingTaskEditor.setTextAndPlaceCursorAtEnd(selectedTask!!.task) // TODO this should strip the created date from the text
+
+        val taskText = Task.removeCreatedDate(selectedTask!!.task)
+
+        existingTaskEditor.setTextAndPlaceCursorAtEnd(taskText)
         editorMode = TaskEditorMode.Edit
         isEditorOpen.value = true
     }
@@ -234,13 +237,6 @@ class TasksViewModel(
             val index = taskList.indexOf(task)
             taskList[index] = updatedTask
         }
-    }
-
-    // TODO implement
-    fun removeTask(task: Task){
-        // If this is the selected task, clear that
-        // remove from tasks
-        // write to storage
     }
 
     companion object {

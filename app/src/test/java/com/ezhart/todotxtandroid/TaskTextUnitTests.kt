@@ -129,4 +129,44 @@ class TaskTextUnitTests {
         val updatedTask = Task(updatedTaskText)
         assertEquals(date, updatedTask.createdDate)
     }
+
+    @Test
+    fun remove_created_date() {
+        val task = "2026-05-05 This is a test"
+        val updatedTask = Task.removeCreatedDate(task)
+
+        assertEquals( "This is a test", updatedTask)
+    }
+
+    @Test
+    fun remove_created_date_when_it_is_not_present() {
+        val task = "This is a test"
+        val updatedTask = Task.removeCreatedDate(task)
+
+        assertEquals( "This is a test", updatedTask)
+    }
+
+    @Test
+    fun remove_created_date_but_not_due_date() {
+        val task = "2026-05-05 This is a test due:2026-05-05"
+        val updatedTask = Task.removeCreatedDate(task)
+
+        assertEquals( "This is a test due:2026-05-05", updatedTask)
+    }
+
+    @Test
+    fun remove_created_date_from_task_with_priority() {
+        val task = "(A) 2026-05-05 This is a test"
+        val updatedTask = Task.removeCreatedDate(task)
+
+        assertEquals( "(A) This is a test", updatedTask)
+    }
+
+    @Test
+    fun remove_created_date_from_completed_task() {
+        val task = "x 2026-05-06 2026-05-05 This is a test"
+        val updatedTask = Task.removeCreatedDate(task)
+
+        assertEquals( "x 2026-05-06 This is a test", updatedTask)
+    }
 }
