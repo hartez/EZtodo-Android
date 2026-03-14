@@ -27,7 +27,7 @@ data class Task(val task: String) {
 
         taskPriority = when (val pri = groups[PRIORITY]?.value[0]) {
             is Char -> Priority(pri)
-            else -> None
+            else -> NoPriority
         }
 
         metadata = parseMetadata(taskBody)
@@ -119,7 +119,7 @@ data class Task(val task: String) {
         }
 
         fun parsePriority(task: String): TaskPriority {
-            val result = priorityRegex.find(task) ?: return None
+            val result = priorityRegex.find(task) ?: return NoPriority
             return Priority(result.value[1])
         }
 
@@ -127,14 +127,14 @@ data class Task(val task: String) {
 
             val currentPriority = parsePriority(task)
 
-            return if (currentPriority == None) {
+            return if (currentPriority == NoPriority) {
                 when (newPriority) {
-                    None -> task
+                    NoPriority -> task
                     is Priority -> "(${newPriority.letter}) $task"
                 }
             } else {
                 when (newPriority) {
-                    None -> task.substring(4)
+                    NoPriority -> task.substring(4)
                     is Priority -> "(${newPriority.letter}) ${task.substring(4)}"
                 }
             }
@@ -153,7 +153,7 @@ data class Task(val task: String) {
 
             val priority = prospectiveTask.taskPriority
 
-            return if (priority == None) {
+            return if (priority == NoPriority) {
                 "$createdDate $task"
             } else {
                 "(${priority.display()}) $createdDate ${task.substring(4)}"
@@ -169,7 +169,7 @@ data class Task(val task: String) {
 
             return if (parsedTask.completed) {
                 task.substring(0, 13) + task.substring(24)
-            } else if (parsedTask.taskPriority != None) {
+            } else if (parsedTask.taskPriority != NoPriority) {
                 task.substring(0, 4) + task.substring(15)
             } else {
                 task.substring(11)

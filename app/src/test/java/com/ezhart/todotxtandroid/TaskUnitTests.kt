@@ -1,6 +1,6 @@
 package com.ezhart.todotxtandroid
 
-import com.ezhart.todotxtandroid.data.None
+import com.ezhart.todotxtandroid.data.NoPriority
 import com.ezhart.todotxtandroid.data.Priority
 import com.ezhart.todotxtandroid.data.Task
 import org.junit.Assert.assertEquals
@@ -25,19 +25,19 @@ class TaskUnitTests {
     @Test
     fun task_priority_must_be_uppercase() {
         val task2 = Task("(a) This is a test task")
-        assertEquals(None, task2.taskPriority)
+        assertEquals(NoPriority, task2.taskPriority)
     }
 
     @Test
     fun task_priority_must_be_first() {
         val task2 = Task(" (A) test")
-        assertEquals(None, task2.taskPriority)
+        assertEquals(NoPriority, task2.taskPriority)
     }
 
     @Test
     fun task_priority_must_be_letter() {
         val task1 = Task("(2) This is a test task")
-        assertEquals(None, task1.taskPriority)
+        assertEquals(NoPriority, task1.taskPriority)
     }
 
     @Test
@@ -206,5 +206,11 @@ class TaskUnitTests {
         // If there's a valid due date, that metadata doesn't display in the task body
         val task = Task("2025-02-31 task data due:2025-03-14")
         assertEquals("task data", task.body)
+    }
+
+    @Test
+    fun priority_none(){
+        val pri = NoPriority
+        assertEquals(" ", pri.display())
     }
 }

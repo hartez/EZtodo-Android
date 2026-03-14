@@ -1,23 +1,23 @@
 package com.ezhart.todotxtandroid.data
 
-sealed class TaskPriority{
-    fun display(noneLabel: String = " "):String{
+sealed class TaskPriority {
+    fun display(noneLabel: String = " "): String {
         return when (this) {
-            None -> noneLabel
+            is NoPriority -> noneLabel
             is Priority -> "${this.letter}"
         }
     }
 
     companion object {
 
-        val options : List<TaskPriority> = options()
+        val options: List<TaskPriority> by lazy { options() }
 
-        private fun options():List<TaskPriority>{
+        private fun options(): List<TaskPriority> {
             val list = mutableListOf<TaskPriority>()
 
-            list.add(None)
+            list.add(NoPriority)
 
-            for(n in 65..90){
+            for (n in 65..90) {
                 list.add(Priority(Char(n)))
             }
 
@@ -26,9 +26,9 @@ sealed class TaskPriority{
     }
 }
 
-data object None : TaskPriority()
+data object NoPriority : TaskPriority()
 data class Priority(val letter: Char) : TaskPriority() {
-    init{
+    init {
         require(letter.isLetter() && letter.isUpperCase())
     }
 }

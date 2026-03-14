@@ -158,7 +158,6 @@ class TasksViewModel(
             val toAdd = newTaskEditor.text.toString()
 
             newTaskEditor.clearText()
-            isEditorOpen.value = true
 
             addTask(toAdd)
         } else {
@@ -233,7 +232,6 @@ class TasksViewModel(
     private fun addTask(task: String) {
         // Make sure the created date is in the task
         val taskText = Task.insertCreatedDate(task, LocalDate.now())
-        tasks.value.add(Task(taskText))
 
         tasks.update {
             tasks.value.toMutableList().apply {

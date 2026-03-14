@@ -1,8 +1,7 @@
 package com.ezhart.todotxtandroid
 
-import androidx.activity.compose.LocalActivity
 import com.ezhart.todotxtandroid.data.Priority
-import com.ezhart.todotxtandroid.data.None
+import com.ezhart.todotxtandroid.data.NoPriority
 import com.ezhart.todotxtandroid.data.Task
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -26,10 +25,10 @@ class TaskTextUnitTests {
     fun remove_priority() {
         val task = "(A) This is a test task"
 
-        val updatedTask = Task.editPriority(task, None)
+        val updatedTask = Task.editPriority(task, NoPriority)
 
         assertEquals("This is a test task", updatedTask)
-        assertEquals(None, Task.parsePriority(updatedTask))
+        assertEquals(NoPriority, Task.parsePriority(updatedTask))
     }
 
     @Test

@@ -50,7 +50,6 @@ fun DetailsDialog(
         Card(
             modifier = Modifier
                 .fillMaxSize(0.90f)
-            //.anchoredDraggable()
         ) {
             Column(
                 modifier = Modifier
