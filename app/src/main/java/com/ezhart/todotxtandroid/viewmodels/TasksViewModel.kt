@@ -108,7 +108,7 @@ class TasksViewModel(
         }
     }
 
-    fun selectTask(task: Task) {
+    fun selectTask(task: Task, showDetails: Boolean = true) {
         selectedTask = task
         showDetails()
     }
@@ -187,7 +187,8 @@ class TasksViewModel(
         }
     }
 
-    fun showAlert(message: String) {
+    fun showAlert(message: String, duration:Int = Int.MAX_VALUE) {
+        // TODO self-dismissing alerts
         alert = message
     }
 

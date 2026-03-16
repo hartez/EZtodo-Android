@@ -77,7 +77,18 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 TaskList(
                     uiState.filteredTasks, uiState.filterLabel,
                     { viewModel.selectTask(it) },
-                    onToggleCompleted = { viewModel.toggleCompleted(it)}
+                    onToggleCompleted = {
+                        val message = when(it.completed){
+                            true -> "Task marked pending"
+                            false -> "Task marked completed"
+                        }
+                        viewModel.toggleCompleted(it)
+                        //viewModel.showAlert(message, 1000)
+                    },
+                    onEdit = {
+                        viewModel.selectTask(it, false)
+                        viewModel.editSelectedTask()
+                    }
                 )
             }
 

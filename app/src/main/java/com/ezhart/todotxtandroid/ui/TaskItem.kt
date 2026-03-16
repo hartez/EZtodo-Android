@@ -25,6 +25,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -53,10 +54,7 @@ fun TaskItem(
     swipeOptions: TaskSwipeOptions
 ) {
 
-    val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
-        SwipeToDismissBoxValue.Settled,
-        SwipeToDismissBoxDefaults.positionalThreshold
-    )
+    val swipeToDismissBoxState = rememberSwipeToDismissBoxState()
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -65,7 +63,6 @@ fun TaskItem(
         enableDismissFromEndToStart = swipeOptions.endToStartOption != null,
         enableDismissFromStartToEnd = swipeOptions.startToEndOption != null,
 
-        // TODO go ahead and add edit (mark selected, then set value to open editor, can do it all in viewmodel)
         // TODO toast message when toggling complete
         // TODO Undo button in toast alert?
 
@@ -79,9 +76,13 @@ fun TaskItem(
                         swipeToDismissBoxState.reset()
                         swipeOptions.endToStartOption?.onSwipe(task)
                     }
-
                 }
-
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    coroutineScope.launch {
+                        swipeToDismissBoxState.reset()
+                        swipeOptions.startToEndOption?.onSwipe(task)
+                    }
+                }
                 else -> {}
             }
         }

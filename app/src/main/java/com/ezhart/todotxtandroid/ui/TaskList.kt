@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -48,6 +49,7 @@ fun TaskList(
     header: String,
     onSelect: (Task) -> Unit,
     onToggleCompleted: (Task) -> Unit,
+    onEdit: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val maxHeightPx = with(LocalDensity.current) { Dimensions.TaskListHeaderExpanded.toPx() }
@@ -94,7 +96,8 @@ fun TaskList(
 
         stickyHeader { Header(header, tasks.count(), headerHeight) }
 
-        itemsIndexed(tasks,
+        itemsIndexed(
+            tasks,
             key = { _, t -> t.task }
         ) { index, task ->
             TaskItem(
@@ -106,7 +109,15 @@ fun TaskList(
                         MaterialTheme.colorScheme.primaryContainer,
                         MaterialTheme.colorScheme.onPrimaryContainer,
                         Icons.Outlined.Check,
-                        { onToggleCompleted(it) })
+                        { onToggleCompleted(it) }
+                    ),
+                    startToEndOption = SwipeOption(
+                        "Edit",
+                        MaterialTheme.colorScheme.secondaryContainer,
+                        MaterialTheme.colorScheme.onSecondaryContainer,
+                        Icons.Outlined.Edit,
+                        { onEdit(it) }
+                    ),
                 )
             )
             if (index < tasks.lastIndex)
@@ -198,7 +209,7 @@ fun TaskListPreview() {
 
     TodotxtAndroidTheme {
         Surface {
-            TaskList(previewTasks, "All Tasks", {}, onToggleCompleted = {})
+            TaskList(previewTasks, "All Tasks", {}, onToggleCompleted = {}, onEdit = {})
         }
     }
 }

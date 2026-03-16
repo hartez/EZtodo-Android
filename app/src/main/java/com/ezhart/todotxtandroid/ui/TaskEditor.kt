@@ -79,7 +79,7 @@ fun TaskEditor(
                                 "enter task", color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
-                        lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 2),
+                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = containerColor,
                             unfocusedContainerColor = containerColor,
