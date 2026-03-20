@@ -27,5 +27,7 @@ data class TaskListUIState(
             else -> "$count Tasks"
         }
     }
+
+    val shouldHandleBackNavigation = (!textFilter.isEmpty() || filter != AllTasksFilter)
 }
 

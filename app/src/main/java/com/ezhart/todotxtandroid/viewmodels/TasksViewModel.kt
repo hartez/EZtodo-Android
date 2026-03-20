@@ -139,6 +139,10 @@ class TasksViewModel(
         filter.value = newFilter
     }
 
+    fun back() {
+        unwindFilter()
+    }
+
     fun editSelectedTask() {
         isDetailsOpen = false
 
@@ -183,30 +187,10 @@ class TasksViewModel(
         showActionAlert(message, "Undo") { toggleCompleted(updatedTask) }
     }
 
-    fun commitTaskChanges() {
-        if (editorMode == TaskEditorMode.Create) {
-            val toAdd = newTaskEditor.text.toString()
-
-            if (toAdd.isBlank()) {
-                return
-            }
-
-            newTaskEditor.clearText()
-
-            addTask(toAdd)
-        } else {
-
-            // TODO How should we handle blank task updates? Is that a deletion? Do we ignore them?
-
-            val oldTask = selectedTask!!
-            val updatedTask = existingTaskEditor.text.toString()
-
-            existingTaskEditor.clearText()
-            isEditorOpen.value = false
-            clearTaskSelection()
-            editorMode = TaskEditorMode.Create
-
-            editTask(oldTask, updatedTask)
+    fun commitTaskChanges(markComplete: Boolean) {
+        when (editorMode) {
+            TaskEditorMode.Create -> createTask(markComplete)
+            TaskEditorMode.Edit -> updateSelectedTask()
         }
     }
 
@@ -265,6 +249,53 @@ class TasksViewModel(
             delay(100)
 
             isRefreshing = false
+        }
+    }
+
+    /* For the moment, we're just ignoring blank task updates entirely.
+    In the future it may make sense to consider them invalid input in the UI
+    or to use "blanking" a task as a way to delete it. But for now I don't have a
+    string opinion on which it should be, since it's not part of my usage pattern. */
+
+    private fun createTask(markComplete: Boolean) {
+        var toAdd = newTaskEditor.text.toString()
+        newTaskEditor.clearText()
+
+        if (toAdd.isBlank()) {
+            return
+        }
+
+        if (markComplete) {
+            toAdd = Task.markCompleted(toAdd, LocalDate.now())
+        }
+
+        addTask(toAdd)
+    }
+
+    private fun updateSelectedTask() {
+        val oldTask = selectedTask!!
+        val updatedTask = existingTaskEditor.text.toString()
+
+        existingTaskEditor.clearText()
+        isEditorOpen.value = false
+        clearTaskSelection()
+        editorMode = TaskEditorMode.Create
+
+        if (updatedTask.isBlank()) {
+            return
+        }
+
+        editTask(oldTask, updatedTask)
+    }
+
+    private fun unwindFilter() {
+        if (!textFilterEditor.text.isEmpty()) {
+            textFilterEditor.clearText()
+            return
+        }
+
+        if (filter != AllTasksFilter) {
+            updateFilter(AllTasksFilter)
         }
     }
 

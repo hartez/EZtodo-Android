@@ -47,7 +47,7 @@ import java.time.LocalDate
 fun TaskEditor(
     editorState: TaskEditorUIState,
     onClose: () -> Unit,
-    onSubmit: () -> Unit,
+    onSubmit: (markComplete: Boolean) -> Unit,
     listTagsSelections: (String) -> Map<String, Boolean>
 ) {
     val sheetState = rememberModalBottomSheetState(
@@ -91,7 +91,7 @@ fun TaskEditor(
                     )
 
                     IconButton(
-                        onClick = onSubmit,
+                        onClick = { onSubmit(false) },
                         modifier = Modifier.align(Alignment.CenterVertically)
                     ) {
                         Icon(
@@ -140,10 +140,7 @@ fun TaskEditor(
 
                     if (editorState.mode == TaskEditorMode.Create) {
                         IconButton(
-                            onClick = {
-                                // TODO Need a task edit for completed
-                                // This one will also do a taskViewModel.add()
-                            }) {
+                            onClick = { onSubmit(true) }) {
                             Icon(
                                 imageVector = Icons.Outlined.Done, contentDescription = "Done"
                             )
@@ -173,7 +170,7 @@ fun TaskEditor(
                             TagsDialog(
                                 onDismissRequest = { isTagDialogOpen = false },
                                 options = listTagsSelections(textEditorState.text.toString()),
-                                onSubmit = { it ->
+                                onSubmit = {
                                     textEditorState.setTextAndPlaceCursorAtEnd(
                                         Task.editTags(
                                             textEditorState.text.toString(),

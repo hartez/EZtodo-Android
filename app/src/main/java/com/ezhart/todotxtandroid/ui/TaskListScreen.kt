@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ezhart.todotxtandroid.data.AllTasksFilter
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 import com.ezhart.todotxtandroid.viewmodels.TasksViewModel
 import kotlinx.coroutines.launch
@@ -79,11 +78,8 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
         }
     }
 
-    BackHandler(uiState.filter != AllTasksFilter) {
-
-        // TODO handle search bar being open
-
-        viewModel.updateFilter(AllTasksFilter)
+    BackHandler(uiState.shouldHandleBackNavigation) {
+        viewModel.back()
     }
 
     TodotxtAndroidTheme {
@@ -163,7 +159,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                     viewModel.closeEditor()
                 },
                 {
-                    viewModel.commitTaskChanges()
+                    viewModel.commitTaskChanges(it)
                 },
                 viewModel::listTagsSelections
             )
