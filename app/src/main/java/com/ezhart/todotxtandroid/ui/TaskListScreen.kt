@@ -1,13 +1,12 @@
 package com.ezhart.todotxtandroid.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,50 +93,44 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                     Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
                 })
             },
-            contentWindowInsets = WindowInsets.statusBars,
-            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets.safeContent,
+            modifier = Modifier.imePadding(),
             bottomBar = {
-                Crossfade(
-                    modifier = Modifier.animateContentSize(),
-                    targetState = isInTextFilterMode,
-                    label = "Search"
-                ) { target ->
-                    if (!target) {
-                        AppBar(
-                            { isFilterSheetOpen = true },
-                            { isMenuSheetOpen = true },
-                            showSearch = { isInTextFilterMode = true }
-                        )
-                    } else {
-                        TextFilterBar(viewModel.textFilterEditor) {
-                            isInTextFilterMode = false
-                        }
+                if (!isInTextFilterMode) {
+                    AppBar(
+                        { isFilterSheetOpen = true },
+                        { isMenuSheetOpen = true },
+                        showSearch = { isInTextFilterMode = true }
+                    )
+                } else {
+                    TextFilterBar(viewModel.textFilterEditor) {
+                        isInTextFilterMode = false
                     }
                 }
             },
-            // TODO hide FAB when in text filter mode
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        viewModel.editNewTask()
+                if (!isInTextFilterMode) {
+                    FloatingActionButton(
+                        onClick = {
+                            viewModel.editNewTask()
+                        }
+                    ) {
+                        Icon(Icons.Outlined.Add, "Add Task")
                     }
-                ) {
-                    Icon(Icons.Outlined.Add, "Add Task")
                 }
             }
-        ) { innerPadding ->
-
-            // TODO Figure out how to stop pushing the task list up when the keyboard is showing
-            // in text filter mode
-
+        ) { scaffoldPadding ->
             PullToRefreshBox(
                 isRefreshing = viewModel.isRefreshing,
                 onRefresh = {
                     viewModel.loadTasks(true)
-                }, modifier = Modifier.padding(innerPadding)
+                },
+                modifier = Modifier.padding(scaffoldPadding)
+                    .consumeWindowInsets(scaffoldPadding)
+                    .imePadding()
             ) {
                 TaskList(
-                    uiState.filteredTasks, uiState.filterLabel,
+                    uiState.filteredTasks, uiState.headerText, subHeaderText = uiState.subHeaderText,
                     { viewModel.selectTask(it) },
                     onToggleCompleted = {
                         viewModel.toggleCompleted(it)

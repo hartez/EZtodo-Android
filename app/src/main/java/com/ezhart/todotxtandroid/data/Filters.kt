@@ -3,9 +3,9 @@ package com.ezhart.todotxtandroid.data
 sealed class Filter{
     fun display(): String{
         return when (this) {
-            is ProjectFilter -> "Project ${this.project}"
+            is ProjectFilter -> this.project
             is DueFilter -> "Due Tasks"
-            is ContextFilter -> "Context ${this.context}"
+            is ContextFilter -> this.context
             is PendingFilter -> "Pending Tasks"
             is CompletedFilter -> "Completed Tasks"
             else -> "All Tasks"

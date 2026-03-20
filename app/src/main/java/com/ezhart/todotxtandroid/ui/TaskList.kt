@@ -31,6 +31,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,7 +47,8 @@ import com.ezhart.todotxtandroid.viewmodels.TaskSwipeOptions
 @Composable
 fun TaskList(
     tasks: List<Task>,
-    header: String,
+    headerText: String,
+    subHeaderText: String,
     onSelect: (Task) -> Unit,
     onToggleCompleted: (Task) -> Unit,
     onEdit: (Task) -> Unit,
@@ -90,11 +92,11 @@ fun TaskList(
 
     LazyColumn(
         modifier = modifier
-            .fillMaxSize()
+            //.fillMaxSize()
             .nestedScroll(connection)
     ) {
 
-        stickyHeader { Header(header, tasks.count(), headerHeight) }
+        stickyHeader { Header(headerText, subHeaderText, headerHeight) }
 
         itemsIndexed(
             tasks,
@@ -127,7 +129,7 @@ fun TaskList(
 }
 
 @Composable
-fun Header(text: String, taskCount: Int, height: Dp, modifier: Modifier = Modifier) {
+fun Header(text: String, subHeading: String, height: Dp, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .height(height)
@@ -152,16 +154,15 @@ fun Header(text: String, taskCount: Int, height: Dp, modifier: Modifier = Modifi
 
             Text(
                 text = text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Left,
                 fontSize = fontSize
             )
 
             Text(
-                text = when (taskCount) {
-                    1 -> "1 task"
-                    else -> "$taskCount tasks"
-                },
+                text = subHeading,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.offset(0.dp, Dimensions.TaskListHeaderExpanded - height)
             )
@@ -175,7 +176,7 @@ fun Header(text: String, taskCount: Int, height: Dp, modifier: Modifier = Modifi
 fun HeaderLargePreview() {
     TodotxtAndroidTheme {
         Surface {
-            Header("All Tasks", 103, Dimensions.TaskListHeaderExpanded)
+            Header("All Tasks", "103", Dimensions.TaskListHeaderExpanded)
         }
     }
 }
@@ -186,7 +187,7 @@ fun HeaderLargePreview() {
 fun HeaderCompactPreview() {
     TodotxtAndroidTheme {
         Surface {
-            Header("All Tasks", 103, Dimensions.TaskListHeaderCompact)
+            Header("All Tasks", "103", Dimensions.TaskListHeaderCompact)
         }
     }
 }
@@ -209,7 +210,7 @@ fun TaskListPreview() {
 
     TodotxtAndroidTheme {
         Surface {
-            TaskList(previewTasks, "All Tasks", {}, onToggleCompleted = {}, onEdit = {})
+            TaskList(previewTasks, "All Tasks", "", {}, {}, {})
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.ezhart.todotxtandroid.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -9,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,10 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ezhart.todotxtandroid.ui.theme.TodotxtAndroidTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFilterBar(
     filterTextState: TextFieldState,
@@ -32,7 +28,6 @@ fun TextFilterBar(
 
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
-        modifier = Modifier.heightIn(max = 128.dp),
         actions = {
 
             IconButton(onClick = {
@@ -46,7 +41,6 @@ fun TextFilterBar(
             // TODO Leading icon?
 
             TextField(
-
                 state = filterTextState,
                 placeholder = {
                     Text(
@@ -77,6 +71,6 @@ fun TextFilterBar(
 @Composable
 fun SearchBarPreviewText() {
     TodotxtAndroidTheme {
-        TextFilterBar(TextFieldState(),{})
+        TextFilterBar(TextFieldState()) {}
     }
 }
