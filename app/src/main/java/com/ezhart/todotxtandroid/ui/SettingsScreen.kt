@@ -25,12 +25,14 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -38,10 +40,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ezhart.todotxtandroid.ui.theme.AppTheme
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.DynamicTheme
 import com.ezhart.todotxtandroid.ui.theme.ThemeMode
-import com.ezhart.todotxtandroid.ui.theme.AppTheme
 import com.ezhart.todotxtandroid.viewmodels.SettingsViewModel
 
 @Composable
@@ -52,6 +54,7 @@ fun SettingsScreen() {
     val accountEmail by settingsViewModel.accountEmail.collectAsStateWithLifecycle("")
     val todoPath by settingsViewModel.todoPath.collectAsStateWithLifecycle("")
     val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle(ThemeMode.System)
+    val useDynamicColor by settingsViewModel.useDynamicColor.collectAsStateWithLifecycle(false)
     val context = LocalContext.current
 
     DynamicTheme {
@@ -61,10 +64,12 @@ fun SettingsScreen() {
             accountEmail,
             todoPath,
             themeMode,
+            useDynamicColor,
             settingsViewModel::signOut,
             onBeginSignIn = { settingsViewModel.beginSignIn(context) },
             settingsViewModel::updateTodoPath,
-            onUpdateThemeMode = settingsViewModel::updateThemeMode
+            onUpdateThemeMode = settingsViewModel::updateThemeMode,
+            onUpdateDynamicColor = settingsViewModel::updateUseDynamicColor
         )
     }
 }
@@ -77,10 +82,12 @@ fun SettingsContent(
     accountEmail: String,
     todoPath: String,
     themeMode: ThemeMode,
+    useDynamicColor: Boolean,
     onSignOut: () -> Unit,
     onBeginSignIn: () -> Unit,
     onUpdateTodoPath: (String) -> Unit,
-    onUpdateThemeMode: (ThemeMode) -> Unit
+    onUpdateThemeMode: (ThemeMode) -> Unit,
+    onUpdateDynamicColor: (Boolean) -> Unit
 ) {
 
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -149,12 +156,23 @@ fun SettingsContent(
             }
 
             Section(title = "Appearance") {
-                SettingSelection(
-                    "Theme",
-                    { onUpdateThemeMode(enumValueOf<ThemeMode>(it)) },
-                    themeMode.toString(),
-                    enumValues<ThemeMode>().map{t -> t.toString()}
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.SettingSpacing)
+                ) {
+                    SettingSelection(
+                        "Theme",
+                        { onUpdateThemeMode(enumValueOf<ThemeMode>(it)) },
+                        themeMode.toString(),
+                        enumValues<ThemeMode>().map { t -> t.toString() }
+                    )
+
+                    SettingSwitch(
+                        "Use Dynamic Color",
+                        onToggle = { onUpdateDynamicColor(it) },
+                        useDynamicColor
+                    )
+                }
             }
 
             Section("About") {
@@ -184,15 +202,14 @@ fun Section(
         Row {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .fillMaxWidth()
             )
         }
 
-        Row { content() }
+        content()
     }
 }
 
@@ -201,8 +218,7 @@ fun SettingTitle(title: String) {
     Row {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.titleMedium
         )
     }
 }
@@ -239,11 +255,7 @@ fun SettingSelection(
     selection: String,
     options: Iterable<String>
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-
-    ) {
+    Column {
 
         SettingTitle(title)
 
@@ -261,6 +273,22 @@ fun SettingSelection(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SettingSwitch(title: String, onToggle: (Boolean) -> Unit, selection: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.SettingSpacing)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Switch(checked = selection, onCheckedChange = onToggle)
     }
 }
 
@@ -354,10 +382,12 @@ fun SettingsContentPreview() {
                 "cfinley@miami.org",
                 "/todo/todo.txt",
                 ThemeMode.Light,
+                false,
                 { },
                 onBeginSignIn = { },
                 { },
-                {}
+                { },
+                { }
             )
         }
     }

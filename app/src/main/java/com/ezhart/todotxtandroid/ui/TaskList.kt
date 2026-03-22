@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.times
 import com.ezhart.todotxtandroid.data.Task
-import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
+import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.viewmodels.SwipeOption
 import com.ezhart.todotxtandroid.viewmodels.TaskSwipeOptions
 

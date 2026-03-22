@@ -1,6 +1,7 @@
 package com.ezhart.todotxtandroid.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -19,6 +20,7 @@ class SettingsStorage(private val context: Context) {
         val ACCOUNT_EMAIL = stringPreferencesKey("account_email")
         val TODO_PATH = stringPreferencesKey("todo_path")
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     }
 
     val accountDisplayName: Flow<String> = context.dataStore.data.map { preferences ->
@@ -39,6 +41,10 @@ class SettingsStorage(private val context: Context) {
             "" -> ThemeMode.System
             else -> enumValueOf<ThemeMode>(themeMode)
         }
+    }
+
+    val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.DYNAMIC_COLOR] ?: false
     }
 
     suspend fun setAccountDisplayName(accountDisplayName: String) {
@@ -64,6 +70,12 @@ class SettingsStorage(private val context: Context) {
             preferences[PreferencesKeys.THEME_MODE] = mode.toString()
         }
     }
+
+    suspend fun setUseDynamicColor(useDynamicColor: Boolean){
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DYNAMIC_COLOR] = useDynamicColor
+        }
+    }
 }
 
 class SettingsRepository(
@@ -73,6 +85,7 @@ class SettingsRepository(
     val accountEmail: Flow<String> = settingsStorage.accountEmail
     val todoPath: Flow<String> = settingsStorage.todoPath
     val themeMode: Flow<ThemeMode> = settingsStorage.themeMode
+    val useDynamicColor: Flow<Boolean> = settingsStorage.useDynamicColor
 
     suspend fun setAccountDisplayName(accountDisplayName: String) {
         settingsStorage.setAccountDisplayName(accountDisplayName)
@@ -88,6 +101,10 @@ class SettingsRepository(
 
     suspend fun setThemeMode(mode: ThemeMode) {
         settingsStorage.setThemeMode(mode)
+    }
+
+    suspend fun setUseDynamicColor(useDynamicColor: Boolean) {
+        settingsStorage.setUseDynamicColor(useDynamicColor)
     }
 }
 

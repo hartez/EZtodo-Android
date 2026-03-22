@@ -9,5 +9,5 @@ object Dimensions {
     val SheetCornerRadius = 8.dp
     val MenuOptionPadding = PaddingValues(16.dp, 16.dp, 16.dp, 16.dp)
     val SettingSectionPadding = PaddingValues(start= 32.dp, top=8.dp, bottom=8.dp, end=16.dp)
-    val SettingSpacing = 8.dp
+    val SettingSpacing = 12.dp
 }

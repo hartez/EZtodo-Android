@@ -92,7 +92,7 @@ fun TaskItem(
                 .background(MaterialTheme.colorScheme.background)
                 .clickable(onClick = { onSelect(task) })
                 .fillMaxWidth()
-                .padding(0.dp, 16.dp)
+                .padding(5.dp, 16.dp)
         ) {
 
             Column(Modifier.weight(1f)) {

@@ -59,7 +59,7 @@ fun TaskEditor(
 
     if (editorState.isOpen) {
 
-        val containerColor = MaterialTheme.colorScheme.primaryContainer
+        val containerColor = MaterialTheme.colorScheme.secondaryContainer
         val textEditorState = editorState.textEditorState
 
         ModalBottomSheet(
