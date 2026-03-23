@@ -52,11 +52,9 @@ class TasksViewModel(
     var isRefreshing by mutableStateOf(false)
         private set
 
-    var selectedTask by mutableStateOf<Task?>(null)
-        private set
+    private val selectedTask = MutableStateFlow<Task?>(null)
 
-    var isDetailsOpen by mutableStateOf(false)
-        private set
+    private val isDetailsOpen = MutableStateFlow(false)
 
     var messageUIState by mutableStateOf(MessageUIState())
         private set
@@ -104,6 +102,24 @@ class TasksViewModel(
         )
     )
 
+    val detailsDialogUIState: StateFlow<DetailsDialogUIState> = combine(isDetailsOpen, selectedTask) {
+        isDetailsOpen, selectedTask ->
+        DetailsDialogUIState(
+            isDetailsOpen,
+            selectedTask,
+            nextTask(),
+            previousTask(),
+            { dismissDetails() },
+            { t -> selectTask(t) },
+            {editSelectedTask()},
+            { if(selectedTask != null){ toggleCompleted(selectedTask) }}
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        initialValue = DetailsDialogUIState()
+    )
+
     fun listTagsSelections(task: String): Map<String, Boolean> {
         val selectedContexts = Task.parseContexts(task)
         val selectedProjects = Task.parseProjects(task)
@@ -116,22 +132,47 @@ class TasksViewModel(
     }
 
     fun selectTask(task: Task, showDetails: Boolean = true) {
-        selectedTask = task
+        selectedTask.value = task
         if (showDetails) {
             showDetails()
         }
     }
 
+    private fun nextTask() : Task? {
+        val currentTask = selectedTask.value ?: return null
+        val tasks = taskListUIState.value.filteredTasks
+
+        val currentIndex = tasks.indexOf(currentTask)
+        if(currentIndex >= tasks.count() - 1){
+            return tasks.first()
+        }
+
+        return tasks[currentIndex + 1]
+    }
+
+    private fun previousTask() : Task? {
+        val currentTask = selectedTask.value ?: return null
+        val tasks = taskListUIState.value.filteredTasks
+
+        val currentIndex = tasks.indexOf(currentTask)
+
+        if(currentIndex == 0){
+            return tasks.last()
+        }
+
+        return tasks[currentIndex - 1]
+    }
+
     fun clearTaskSelection() {
-        selectedTask = null
+        selectedTask.value = null
     }
 
     fun showDetails() {
-        isDetailsOpen = true
+        isDetailsOpen.value = true
     }
 
     fun dismissDetails() {
-        isDetailsOpen = false
+        isDetailsOpen.value = false
         clearTaskSelection()
     }
 
@@ -144,9 +185,9 @@ class TasksViewModel(
     }
 
     fun editSelectedTask() {
-        isDetailsOpen = false
+        isDetailsOpen.value = false
 
-        val taskText = Task.removeCreatedDate(selectedTask!!.task)
+        val taskText = Task.removeCreatedDate(selectedTask.value!!.task)
 
         existingTaskEditor.setTextAndPlaceCursorAtEnd(taskText)
         editorMode = TaskEditorMode.Edit
@@ -164,7 +205,7 @@ class TasksViewModel(
 
     fun toggleCompleted(task: Task) {
 
-        val selected = task == selectedTask
+        val selected = task == selectedTask.value
 
         val message = when (task.completed) {
             true -> "Task marked pending"
@@ -181,7 +222,7 @@ class TasksViewModel(
         val updatedTask = editTask(task, updateTaskText)
 
         if (selected) {
-            selectedTask = updatedTask
+            selectedTask.value = updatedTask
         }
 
         showActionAlert(message, "Undo") { toggleCompleted(updatedTask) }
@@ -273,7 +314,7 @@ class TasksViewModel(
     }
 
     private fun updateSelectedTask() {
-        val oldTask = selectedTask!!
+        val oldTask = selectedTask.value!!
         val updatedTask = existingTaskEditor.text.toString()
 
         existingTaskEditor.clearText()

@@ -43,6 +43,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
     val uiState by viewModel.taskListUIState.collectAsStateWithLifecycle()
     val editorUIState by viewModel.editorUIState.collectAsStateWithLifecycle()
+    val detailsDialogUIState by viewModel.detailsDialogUIState.collectAsStateWithLifecycle()
     val messageUIState = viewModel.messageUIState
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
@@ -164,13 +165,9 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 viewModel::listTagsSelections
             )
 
-            if (viewModel.isDetailsOpen) {
-                Dialog(onDismissRequest = { viewModel.dismissDetails() }) {
-                    DetailsDialog(
-                        { viewModel.dismissDetails() },
-                        viewModel.selectedTask!!,
-                        onEditRequest = { viewModel.editSelectedTask() },
-                        onToggleCompleted = { viewModel.toggleCompleted(viewModel.selectedTask!!) })
+            if (detailsDialogUIState.isOpen) {
+                Dialog(detailsDialogUIState.onDismissRequest) {
+                    DetailsDialog(detailsDialogUIState)
                 }
             }
         }

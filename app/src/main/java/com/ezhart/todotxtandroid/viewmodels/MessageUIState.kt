@@ -10,3 +10,4 @@ data class MessageUIState(
     val actionLabel: String? = null,
     val action: (() -> Unit)? = null,
 )
+

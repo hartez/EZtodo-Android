@@ -1,147 +1,166 @@
 package com.ezhart.todotxtandroid.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntOffset
 import com.ezhart.todotxtandroid.data.Task
-import com.ezhart.todotxtandroid.styleFor
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
-import java.time.LocalDate
-
-// TODO Swipe actions (up to edit, left/right to move to next/prev, down to dismiss dialog)
+import com.ezhart.todotxtandroid.viewmodels.DetailsDialogUIState
+import kotlin.math.roundToInt
 
 @Composable
-fun DetailsDialog(
-    onDismissRequest: () -> Unit, // Don't need this yet, but we will when we implement swipe actions
-    task: Task,
-    onEditRequest: () -> Unit,
-    onToggleCompleted: () -> Unit
-) {
+fun DetailsDialog(uiState: DetailsDialogUIState) {
+    var horizontalDragState by remember { mutableStateOf(AnchoredDraggableState(HorizontalSwipeValue.Current)) }
+    var verticalDragState by remember { mutableStateOf(AnchoredDraggableState(VerticalSwipeValue.Current)) }
 
-    //gist.github.com/fvilarino/ebb3ba8cd643246671ad5ea9b5476d8c
+    var screenWidthOffset = 0f;
+
+    LaunchedEffect(horizontalDragState.settledValue, verticalDragState.settledValue) {
+        when (horizontalDragState.settledValue) {
+            HorizontalSwipeValue.Previous -> {
+                if (uiState.previousTask != null) {
+                    uiState.onUpdateSelectedTask(uiState.previousTask)
+                }
+                horizontalDragState = AnchoredDraggableState(
+                    HorizontalSwipeValue.Current,
+                    horizontalDragState.anchors
+                )
+            }
+
+            HorizontalSwipeValue.Current -> {}
+
+            HorizontalSwipeValue.Next -> {
+                if (uiState.nextTask != null) {
+                    uiState.onUpdateSelectedTask(uiState.nextTask)
+                }
+                horizontalDragState = AnchoredDraggableState(
+                    HorizontalSwipeValue.Current,
+                    horizontalDragState.anchors
+                )
+            }
+        }
+
+        when(verticalDragState.settledValue){
+            VerticalSwipeValue.Dismiss -> {
+                uiState.onDismissRequest()
+            }
+            VerticalSwipeValue.Current -> { }
+            VerticalSwipeValue.Edit -> {
+                uiState.onEditRequest()
+            }
+        }
+    }
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged { layoutSize ->
+                screenWidthOffset = layoutSize.width.toFloat()
+                horizontalDragState.updateAnchors(
+                    DraggableAnchors {
+                        HorizontalSwipeValue.Next at -(layoutSize.width.toFloat())
+                        HorizontalSwipeValue.Current at 0f
+                        HorizontalSwipeValue.Previous at (layoutSize.width.toFloat())
+                    })
+
+                verticalDragState.updateAnchors(
+                    DraggableAnchors {
+                        VerticalSwipeValue.Dismiss at (-layoutSize.height.toFloat())
+                        VerticalSwipeValue.Current at 0f
+                        VerticalSwipeValue.Edit at (layoutSize.height.toFloat())
+                    }
+                )
+            }
+
     ) {
 
-        Card(
-            modifier = Modifier
-                .fillMaxSize(0.90f)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Row {
-                    Text(
-                        text = task.taskPriority.display("No Priority"),
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodyMedium.styleFor(task)
-                    )
+        val baseModifier = Modifier.fillMaxSize(0.90f)
 
-                    Text(
-                        text =
-                            when (task.dueDate) {
-                                null -> "No due date"
-                                else -> "Due ${task.dueDate}"
-                            },
-                        color = when (task.dueDate != null && task.dueDate < LocalDate.now()) {
-                            true -> MaterialTheme.colorScheme.error
-                            else -> MaterialTheme.colorScheme.onSurface
-                        },
-                        style = MaterialTheme.typography.bodyMedium.styleFor(task)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(top = 16.dp)
-                ) {
-                    Text(
-                        text = task.body,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodyLarge.styleFor(task)
-                    )
-                }
-
-                Row {
-                    TextButton(onClick = { onToggleCompleted() }, modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (task.completed) {
-                                "MARK PENDING"
-                            } else {
-                                "MARK COMPLETED"
-                            },
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier.fillMaxWidth()
+        if (uiState.task != null) {
+            DetailsCard(
+                uiState.task,
+                onEditRequest = uiState.onEditRequest,
+                onToggleCompleted = uiState.onToggleCompleted,
+                modifier = baseModifier
+                    .offset {
+                        IntOffset(
+                            horizontalDragState.requireOffset().roundToInt(),
+                            verticalDragState.requireOffset().roundToInt()
                         )
                     }
-
-                    IconButton(onClick = { onEditRequest() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Edit,
-                            contentDescription = "Edit"
-                        )
-                    }
-
-                    // TODO implement sharing
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Outlined.Share,
-                            contentDescription = "Share"
-                        )
-                    }
-                }
-
-                Row {
-                    Text(
-                        text = "Created ${task.createdDate.toString()}",
-                        style = MaterialTheme.typography.labelSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                    .anchoredDraggable(
+                        horizontalDragState,
+                        orientation = Orientation.Horizontal
                     )
-                }
-            }
+                    .anchoredDraggable(
+                        verticalDragState,
+                        orientation = Orientation.Vertical
+                    )
+            )
+        }
+
+        if (uiState.nextTask != null) {
+            DetailsCard(
+                uiState.nextTask,
+                baseModifier
+                    .offset {
+                        IntOffset(
+                            (horizontalDragState.requireOffset() + screenWidthOffset).roundToInt(),
+                            0
+                        )
+                    }
+            )
+        }
+
+        if (uiState.previousTask != null) {
+            DetailsCard(
+                uiState.previousTask,
+                baseModifier
+                    .offset {
+                        IntOffset(
+                            (horizontalDragState.requireOffset() - screenWidthOffset).roundToInt(),
+                            0
+                        )
+                    }
+            )
         }
     }
 }
 
+enum class HorizontalSwipeValue { Previous, Current, Next }
+enum class VerticalSwipeValue { Dismiss, Current, Edit }
 
 @Preview(name = "Details Dialog Light")
 @Preview("Details Dialog Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun DetailsDialogPreview() {
+
+    val uiState = DetailsDialogUIState(
+        true,
+        Task("2025-06-04 Buy apples @shopping +pie due:2025-06-06")
+    )
+
     AppTheme {
         Surface {
-            DetailsDialog(
-                { },
-                Task("2025-06-04 Buy apples @shopping +pie due:2025-06-06"),
-                {}, onToggleCompleted = {}
-            )
+            DetailsDialog(uiState)
         }
     }
 }
