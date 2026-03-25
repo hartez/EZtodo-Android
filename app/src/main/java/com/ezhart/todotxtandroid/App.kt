@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ezhart.todotxtandroid.data.SettingsRepository
-import com.ezhart.todotxtandroid.data.SettingsStorage
 import com.ezhart.todotxtandroid.data.TaskFileService
 import com.ezhart.todotxtandroid.dropbox.DropboxService
 import com.ezhart.todotxtandroid.dropbox.SyncDataStorage
@@ -34,7 +33,7 @@ fun App() {
 }
 
 class TodotxtAndroidApplication : Application() {
-    val settingsRepository: SettingsRepository by lazy { SettingsRepository(SettingsStorage(this)) }
+    val settingsRepository: SettingsRepository by lazy { SettingsRepository(this) }
     val syncData: SyncDataStorage by lazy { SyncDataStorage(this) }
     val taskFileService: TaskFileService by lazy { TaskFileService(this, settingsRepository, syncData) }
     val dropboxService: DropboxService by lazy { DropboxService(this, settingsRepository, syncData) }

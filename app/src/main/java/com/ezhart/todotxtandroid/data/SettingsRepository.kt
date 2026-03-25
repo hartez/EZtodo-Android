@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 
 const val APP_SETTINGS_STORE_NAME = "app_settings"
 
-class SettingsStorage(private val context: Context) {
+class SettingsRepository(private val context: Context) {
 
     private val Context.dataStore by preferencesDataStore(name = APP_SETTINGS_STORE_NAME)
 
@@ -75,38 +75,6 @@ class SettingsStorage(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DYNAMIC_COLOR] = useDynamicColor
         }
-    }
-}
-
-// TODO Really consider whether this additional layer is giving us anything, or if SettingsStorage shouldn't just _be_ the SettingsRepository
-
-class SettingsRepository(
-    private val settingsStorage: SettingsStorage
-) {
-    val accountDisplayName: Flow<String> = settingsStorage.accountDisplayName
-    val accountEmail: Flow<String> = settingsStorage.accountEmail
-    val todoPath: Flow<String> = settingsStorage.todoPath
-    val themeMode: Flow<ThemeMode> = settingsStorage.themeMode
-    val useDynamicColor: Flow<Boolean> = settingsStorage.useDynamicColor
-
-    suspend fun setAccountDisplayName(accountDisplayName: String) {
-        settingsStorage.setAccountDisplayName(accountDisplayName)
-    }
-
-    suspend fun setAccountEmail(accountEmail: String) {
-        settingsStorage.setAccountEmail(accountEmail)
-    }
-
-    suspend fun setTodoPath(todoPath: String) {
-        settingsStorage.setTodoPath(todoPath)
-    }
-
-    suspend fun setThemeMode(mode: ThemeMode) {
-        settingsStorage.setThemeMode(mode)
-    }
-
-    suspend fun setUseDynamicColor(useDynamicColor: Boolean) {
-        settingsStorage.setUseDynamicColor(useDynamicColor)
     }
 }
 
