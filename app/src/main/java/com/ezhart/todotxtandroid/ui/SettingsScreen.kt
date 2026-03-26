@@ -150,8 +150,6 @@ fun SettingsContent(
             }
 
             Section("Data/Sync") {
-                // TODO Background sync frequency
-                // TODO Sync when opened
 
                 SettingDialog(
                     "Task File",

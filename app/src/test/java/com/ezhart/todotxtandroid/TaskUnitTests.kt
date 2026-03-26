@@ -6,7 +6,6 @@ import com.ezhart.todotxtandroid.data.Task
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.junit.experimental.results.PrintableResult
 import java.time.LocalDate
 
 class TaskUnitTests {
@@ -57,8 +56,6 @@ class TaskUnitTests {
         assertEquals(true, task.completed)
         assertEquals(LocalDate.of(2025, 1, 3), task.completedDate)
     }
-
-    // TODO completed mark and date not included in body
 
     @Test
     fun task_completed_must_be_lowercase() {

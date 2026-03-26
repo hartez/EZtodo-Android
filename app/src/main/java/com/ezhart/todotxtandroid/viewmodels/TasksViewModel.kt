@@ -223,6 +223,8 @@ class TasksViewModel(
             false -> "Task marked complete"
         }
 
+        val undoTaskText = task.task
+
         val updateTaskText =
             if (task.completed) {
                 Task.markPending(task.task)
@@ -236,8 +238,7 @@ class TasksViewModel(
             selectedTask.value = updatedTask
         }
 
-        // TODO Just toggling completed doesn't restore things like priority; need a more effective undo
-        showActionAlert(message, "Undo") { toggleCompleted(updatedTask) }
+        showActionAlert(message, "Undo") { editTask(updatedTask, undoTaskText) }
     }
 
     fun commitTaskChanges(markComplete: Boolean) {

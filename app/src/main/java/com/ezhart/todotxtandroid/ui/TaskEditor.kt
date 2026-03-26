@@ -219,7 +219,7 @@ fun EditTaskPreview() {
         true,
         TaskEditorMode.Edit,
         TextFieldState()
-    ) // TODO Set up task text for this to display
+    )
 
     AppTheme {
         Surface {

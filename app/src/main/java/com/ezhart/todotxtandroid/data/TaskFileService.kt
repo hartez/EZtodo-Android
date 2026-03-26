@@ -34,7 +34,6 @@ class TaskFileService(
         }
     }
 
-    // TODO this should probably surface exceptions in a useful way
     suspend fun writeTasksToStorage(taskList: List<Task>) = withContext(Dispatchers.IO) {
 
         val fileName = getFileName(getTodoPath())
