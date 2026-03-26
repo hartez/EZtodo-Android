@@ -122,7 +122,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             PullToRefreshBox(
                 isRefreshing = viewModel.isRefreshing,
                 onRefresh = {
-                    viewModel.loadTasks()
+                    viewModel.refreshTasks()
                 },
                 modifier = Modifier.padding(scaffoldPadding)
                     .consumeWindowInsets(scaffoldPadding)
@@ -154,7 +154,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 isMenuSheetOpen,
                 { isMenuSheetOpen = false },
                 onNavigateToSettings,
-                { viewModel.loadTasks() })
+                { viewModel.refreshTasks() })
 
             TaskEditor(
                 editorUIState,

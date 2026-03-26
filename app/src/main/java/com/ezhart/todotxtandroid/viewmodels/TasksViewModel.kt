@@ -109,23 +109,27 @@ class TasksViewModel(
         )
     )
 
-    val detailsDialogUIState: StateFlow<DetailsDialogUIState> = combine(isDetailsOpen, selectedTask) {
-        isDetailsOpen, selectedTask ->
-        DetailsDialogUIState(
-            isDetailsOpen,
-            selectedTask,
-            nextTask(),
-            previousTask(),
-            { dismissDetails() },
-            { t -> selectTask(t) },
-            {editSelectedTask()},
-            { if(selectedTask != null){ toggleCompleted(selectedTask) }}
+    val detailsDialogUIState: StateFlow<DetailsDialogUIState> =
+        combine(isDetailsOpen, selectedTask) { isDetailsOpen, selectedTask ->
+            DetailsDialogUIState(
+                isDetailsOpen,
+                selectedTask,
+                nextTask(),
+                previousTask(),
+                { dismissDetails() },
+                { t -> selectTask(t) },
+                { editSelectedTask() },
+                {
+                    if (selectedTask != null) {
+                        toggleCompleted(selectedTask)
+                    }
+                }
+            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            initialValue = DetailsDialogUIState()
         )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        initialValue = DetailsDialogUIState()
-    )
 
     fun listTagsSelections(task: String): Map<String, Boolean> {
         val selectedContexts = Task.parseContexts(task)
@@ -145,25 +149,25 @@ class TasksViewModel(
         }
     }
 
-    private fun nextTask() : Task? {
+    private fun nextTask(): Task? {
         val currentTask = selectedTask.value ?: return null
         val tasks = taskListUIState.value.filteredTasks
 
         val currentIndex = tasks.indexOf(currentTask)
-        if(currentIndex >= tasks.count() - 1){
+        if (currentIndex >= tasks.count() - 1) {
             return tasks.first()
         }
 
         return tasks[currentIndex + 1]
     }
 
-    private fun previousTask() : Task? {
+    private fun previousTask(): Task? {
         val currentTask = selectedTask.value ?: return null
         val tasks = taskListUIState.value.filteredTasks
 
         val currentIndex = tasks.indexOf(currentTask)
 
-        if(currentIndex == 0){
+        if (currentIndex == 0) {
             return tasks.last()
         }
 
@@ -275,48 +279,60 @@ class TasksViewModel(
     }
 
     fun loadTasksAtStartup() {
-        if (startupLoaded) return
-
         viewModelScope.launch {
-            startupLoaded = true
-            loadTasks(settingsRepository.syncOnStart.first())
+            if (startupLoaded) {
+                // We've already done the app startup sync; just load from disk (in case the background
+                // sync grabbed some new tasks)
+                loadTasks()
+            } else {
+                startupLoaded = true
+                refreshTasks(settingsRepository.syncOnStart.first())
+            }
         }
     }
 
-    fun loadTasks(shouldSync: Boolean = true) {
+    fun loadTasks() {
         viewModelScope.launch {
-            isRefreshing = true
-
-            if (shouldSync) {
-                when(val syncResult = dropboxService.sync()){
-                    is SyncResult.NotConnected -> {
-                        Log.i(TAG, syncResult.message)
-                        showAlert(syncResult.message)
-                    }
-                    is SyncResult.NotAuthenticated -> {
-                        Log.i(TAG, syncResult.message)
-                        showAlert(syncResult.message)
-                    }
-                    is SyncResult.Success -> {
-                        Log.i(TAG, syncResult.message)
-                    }
-                    is SyncResult.Conflict -> showAlert(syncResult.message)
-                    is SyncResult.Error -> showError(syncResult.e.message.toString())
-                }
-            }
-
             when (val result = taskFileService.loadTasksFromStorage()) {
                 is ReadTaskListResult.Success -> tasks.value = result.tasks.toMutableList()
                 is ReadTaskListResult.Error -> {
                     tasks.value = mutableListOf()
 
-                    when(result.e){
+                    when (result.e) {
                         is FileNotFoundException -> Log.e(TAG, result.e.toString())
-                        else ->  showError("Error reading tasks from local storage: ${result.e.message}")
+                        else -> showError("Error reading tasks from local storage: ${result.e.message}")
                     }
                 }
             }
+        }
+    }
 
+    fun refreshTasks(shouldSync: Boolean = true) {
+        viewModelScope.launch {
+            isRefreshing = true
+
+            if (shouldSync) {
+                when (val syncResult = dropboxService.sync()) {
+                    is SyncResult.NotConnected -> {
+                        Log.i(TAG, syncResult.message)
+                        showAlert(syncResult.message)
+                    }
+
+                    is SyncResult.NotAuthenticated -> {
+                        Log.i(TAG, syncResult.message)
+                        showAlert(syncResult.message)
+                    }
+
+                    is SyncResult.Success -> {
+                        Log.i(TAG, syncResult.message)
+                    }
+
+                    is SyncResult.Conflict -> showAlert(syncResult.message)
+                    is SyncResult.Error -> showError(syncResult.e.message.toString())
+                }
+            }
+
+            loadTasks()
 
             // TODO this is a hack, got to figure out how to fix this
             // if the update is too fast, the refreshing state will get stuck
