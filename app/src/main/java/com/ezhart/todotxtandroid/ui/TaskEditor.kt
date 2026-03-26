@@ -32,6 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +48,7 @@ import java.time.LocalDate
 @Composable
 fun TaskEditor(
     editorState: TaskEditorUIState,
+    focusRequester: FocusRequester,
     onClose: () -> Unit,
     onSubmit: (markComplete: Boolean) -> Unit,
     listTagsSelections: (String) -> Map<String, Boolean>
@@ -87,7 +90,7 @@ fun TaskEditor(
                             unfocusedIndicatorColor = Color.Transparent
                         ),
 
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).focusRequester(focusRequester)
                     )
 
                     IconButton(
@@ -201,10 +204,12 @@ fun NewTaskPreview() {
         TextFieldState()
     )
 
+    val editorFocusRequester = remember { FocusRequester() }
+
     AppTheme {
         Surface {
             TaskEditor(
-                state, {}, {}, { mapOf() }
+                state, editorFocusRequester,{}, {}, { mapOf() }
             )
         }
     }
@@ -221,10 +226,12 @@ fun EditTaskPreview() {
         TextFieldState()
     )
 
+    val editorFocusRequester = remember { FocusRequester() }
+
     AppTheme {
         Surface {
             TaskEditor(
-                state, {}, {}, { mapOf() }
+                state, editorFocusRequester,{}, {}, { mapOf() }
             )
         }
     }

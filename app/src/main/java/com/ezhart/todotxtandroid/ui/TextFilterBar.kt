@@ -17,6 +17,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
@@ -25,9 +27,9 @@ import com.ezhart.todotxtandroid.ui.theme.Dimensions
 @Composable
 fun TextFilterBar(
     filterTextState: TextFieldState,
+    focusRequester: FocusRequester,
     onDismiss: () -> Unit
 ) {
-
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         modifier = Modifier.height(Dimensions.AppBarHeight),
@@ -56,7 +58,7 @@ fun TextFilterBar(
                     unfocusedIndicatorColor = Color.Transparent
                 ),
 
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).focusRequester(focusRequester)
             )
 
             IconButton(onClick = { filterTextState.clearText() }
@@ -72,6 +74,6 @@ fun TextFilterBar(
 @Composable
 fun SearchBarPreviewText() {
     AppTheme {
-        TextFilterBar(TextFieldState()) {}
+        TextFilterBar(TextFieldState(), FocusRequester()) {}
     }
 }

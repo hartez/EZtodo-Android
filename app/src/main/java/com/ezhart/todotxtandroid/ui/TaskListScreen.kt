@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,10 +52,28 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     var isInTextFilterMode by remember { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
 
-
+    val filterBarFocusRequester = remember { FocusRequester() }
+    val editorFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
         viewModel.loadTasksAtStartup()
+    }
+
+    LaunchedEffect(isInTextFilterMode) {
+        if(isInTextFilterMode){
+            filterBarFocusRequester.requestFocus()
+        }else{
+            filterBarFocusRequester.freeFocus()
+        }
+    }
+
+    LaunchedEffect(editorUIState.isOpen) {
+        if(editorUIState.isOpen){
+            editorFocusRequester.requestFocus()
+        }
+        else{
+            editorFocusRequester.freeFocus()
+        }
     }
 
     LaunchedEffect(messageUIState) {
@@ -82,6 +101,9 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     }
 
     BackHandler(uiState.shouldHandleBackNavigation) {
+        // TODO Hitting the back button while the text filter editor is open should switch back to
+        // the default app bar. But the viewModel doesn't know about the search bar state, so we'd need
+        // to add that to the taskListUIState
         viewModel.back()
     }
 
@@ -102,7 +124,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         showSearch = { isInTextFilterMode = true }
                     )
                 } else {
-                    TextFilterBar(viewModel.textFilterEditor) {
+                    TextFilterBar(viewModel.textFilterEditor, filterBarFocusRequester) {
                         isInTextFilterMode = false
                     }
                 }
@@ -158,6 +180,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
             TaskEditor(
                 editorUIState,
+                editorFocusRequester,
                 {
                     viewModel.closeEditor()
                 },
