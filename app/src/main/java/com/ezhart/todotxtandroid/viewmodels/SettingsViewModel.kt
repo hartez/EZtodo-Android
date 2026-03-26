@@ -33,6 +33,7 @@ class SettingsViewModel(
     var themeMode = settingsRepository.themeMode
     var useDynamicColor = settingsRepository.useDynamicColor
     var syncOnStart = settingsRepository.syncOnStart
+    var syncInterval = settingsRepository.syncInterval
 
     fun beginSignIn(context: Context) {
         dropboxService.signIn(context) {
@@ -90,6 +91,12 @@ class SettingsViewModel(
     fun updateSyncOnStart(syncOnStart: Boolean) {
         viewModelScope.launch {
             settingsRepository.setSyncOnStart(syncOnStart)
+        }
+    }
+
+    fun updateSyncInterval(syncInterval: Int) {
+        viewModelScope.launch {
+            settingsRepository.setSyncInterval(syncInterval)
         }
     }
 

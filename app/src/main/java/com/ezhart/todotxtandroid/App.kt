@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data object Tasks
+
 @Serializable
 object Settings
 
@@ -35,6 +36,18 @@ fun App() {
 class TodotxtAndroidApplication : Application() {
     val settingsRepository: SettingsRepository by lazy { SettingsRepository(this) }
     val syncData: SyncDataStorage by lazy { SyncDataStorage(this) }
-    val taskFileService: TaskFileService by lazy { TaskFileService(this, settingsRepository, syncData) }
-    val dropboxService: DropboxService by lazy { DropboxService(this, settingsRepository, syncData) }
+    val taskFileService: TaskFileService by lazy {
+        TaskFileService(
+            this,
+            settingsRepository,
+            syncData
+        )
+    }
+    val dropboxService: DropboxService by lazy {
+        DropboxService(
+            this,
+            settingsRepository,
+            syncData
+        )
+    }
 }

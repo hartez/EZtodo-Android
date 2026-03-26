@@ -3,6 +3,7 @@ package com.ezhart.todotxtandroid.data
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ezhart.todotxtandroid.ui.theme.ThemeMode
@@ -22,6 +23,7 @@ class SettingsRepository(private val context: Context) {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val SYNC_ON_START = booleanPreferencesKey("sync_on_start")
+        val SYNC_INTERVAL = intPreferencesKey("sync_interval")
     }
 
     val accountDisplayName: Flow<String> = context.dataStore.data.map { preferences ->
@@ -50,6 +52,10 @@ class SettingsRepository(private val context: Context) {
 
     val syncOnStart: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.SYNC_ON_START] ?: false
+    }
+
+    val syncInterval: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.SYNC_INTERVAL] ?: 0
     }
 
     suspend fun setAccountDisplayName(accountDisplayName: String) {
@@ -85,6 +91,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun setSyncOnStart(syncOnStart: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SYNC_ON_START] = syncOnStart
+        }
+    }
+
+    suspend fun setSyncInterval(syncInterval: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SYNC_INTERVAL] = syncInterval
         }
     }
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ezhart.todotxtandroid.dropbox.friendlyInterval
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.DynamicTheme
@@ -56,6 +57,7 @@ fun SettingsScreen() {
     val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle(ThemeMode.System)
     val useDynamicColor by settingsViewModel.useDynamicColor.collectAsStateWithLifecycle(false)
     val syncOnStart by settingsViewModel.syncOnStart.collectAsStateWithLifecycle(false)
+    val syncInterval by settingsViewModel.syncInterval.collectAsStateWithLifecycle(0)
     val context = LocalContext.current
 
     DynamicTheme {
@@ -67,12 +69,14 @@ fun SettingsScreen() {
             themeMode,
             useDynamicColor,
             syncOnStart,
+            syncInterval,
             settingsViewModel::signOut,
             onBeginSignIn = { settingsViewModel.beginSignIn(context) },
             settingsViewModel::updateTodoPath,
             onUpdateThemeMode = settingsViewModel::updateThemeMode,
             onUpdateDynamicColor = settingsViewModel::updateUseDynamicColor,
-            onUpdateSyncOnStart = settingsViewModel::updateSyncOnStart
+            onUpdateSyncOnStart = settingsViewModel::updateSyncOnStart,
+            onUpdateSyncInterval = settingsViewModel::updateSyncInterval
         )
     }
 }
@@ -87,12 +91,14 @@ fun SettingsContent(
     themeMode: ThemeMode,
     useDynamicColor: Boolean,
     syncOnStart: Boolean,
+    syncInterval: Int,
     onSignOut: () -> Unit,
     onBeginSignIn: () -> Unit,
     onUpdateTodoPath: (String) -> Unit,
     onUpdateThemeMode: (ThemeMode) -> Unit,
     onUpdateDynamicColor: (Boolean) -> Unit,
-    onUpdateSyncOnStart: (Boolean) -> Unit
+    onUpdateSyncOnStart: (Boolean) -> Unit,
+    onUpdateSyncInterval: (Int) -> Unit
 ) {
 
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -164,6 +170,19 @@ fun SettingsContent(
                     onToggle = { onUpdateSyncOnStart(it) },
                     syncOnStart
                 )
+
+                SettingDialog(
+                    "Sync Interval",
+                    value = friendlyInterval(syncInterval)
+                ) {
+                    IntervalDialog(
+                        onDismissRequest = it,
+                        syncInterval = syncInterval,
+                        onConfirmation = { syncInterval ->
+                            onUpdateSyncInterval(syncInterval)
+                        },
+                        { minutes -> friendlyInterval(minutes) })
+                }
             }
 
             Section(title = "Appearance") {
@@ -195,7 +214,6 @@ fun SettingsContent(
         }
     }
 }
-
 
 @Composable
 fun Section(
@@ -395,8 +413,10 @@ fun SettingsContentPreview() {
                 ThemeMode.Light,
                 false,
                 syncOnStart = false,
+                syncInterval = 60,
                 { },
                 onBeginSignIn = { },
+                { },
                 { },
                 { },
                 { },

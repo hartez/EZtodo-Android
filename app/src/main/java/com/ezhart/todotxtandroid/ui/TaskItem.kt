@@ -61,9 +61,6 @@ fun TaskItem(
         enableDismissFromEndToStart = swipeOptions.endToStartOption != null,
         enableDismissFromStartToEnd = swipeOptions.startToEndOption != null,
 
-        // TODO toast message when toggling complete
-        // TODO Undo button in toast alert?
-
         backgroundContent = {
             SwipeActionBackground(swipeToDismissBoxState.dismissDirection, swipeOptions)
         },

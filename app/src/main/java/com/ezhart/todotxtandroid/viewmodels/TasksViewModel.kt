@@ -232,6 +232,7 @@ class TasksViewModel(
             selectedTask.value = updatedTask
         }
 
+        // TODO Just toggling completed doesn't restore things like priority; need a more effective undo
         showActionAlert(message, "Undo") { toggleCompleted(updatedTask) }
     }
 
@@ -289,18 +290,18 @@ class TasksViewModel(
             if (shouldSync) {
                 when(val syncResult = dropboxService.sync()){
                     is SyncResult.NotConnected -> {
-                        Log.i(TAG, "No network connection, skipping remote sync.")
-                        showAlert("No network connection")
+                        Log.i(TAG, syncResult.message)
+                        showAlert(syncResult.message)
+                    }
+                    is SyncResult.NotAuthenticated -> {
+                        Log.i(TAG, syncResult.message)
+                        showAlert(syncResult.message)
                     }
                     is SyncResult.Success -> {
                         Log.i(TAG, syncResult.message)
                     }
                     is SyncResult.Conflict -> showAlert(syncResult.message)
                     is SyncResult.Error -> showError(syncResult.e.message.toString())
-                    is SyncResult.NotAuthenticated -> {
-                        Log.i(TAG, "Not authenticated to Dropbox, skipping remote sync.")
-                        showAlert("Not authenticated to Dropbox")
-                    }
                 }
             }
 

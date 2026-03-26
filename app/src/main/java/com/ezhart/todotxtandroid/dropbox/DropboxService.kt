@@ -15,14 +15,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.io.path.Path
 
-sealed interface SyncResult {
-    class NotConnected : SyncResult
-    class NotAuthenticated : SyncResult
-    class Success(val message: String) : SyncResult
-    class Conflict(val message: String) : SyncResult
-    class Error(val e: Exception) : SyncResult
-}
-
 class DropboxService(
     val applicationContext: Context,
     private val settings: SettingsRepository,
@@ -118,7 +110,7 @@ class DropboxService(
             SyncResult.Success("No changes in local or remote file; nothing to sync.")
 
         } catch (e: Exception) {
-            SyncResult.Error(e)
+            SyncResult.Error("Error while syncing task files", e)
         }
     }
 
