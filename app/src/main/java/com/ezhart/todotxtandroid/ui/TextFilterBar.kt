@@ -1,7 +1,8 @@
 package com.ezhart.todotxtandroid.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -17,22 +18,29 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
-import com.ezhart.todotxtandroid.ui.theme.Dimensions
 
 @Composable
 fun TextFilterBar(
     filterTextState: TextFieldState,
-    focusRequester: FocusRequester,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+
+    // BottomAppBar is deprecated, will replace this when Jetpack has better support for
+    // docked toolbars or possible use floating toolbars
+
     BottomAppBar(
+        contentPadding = PaddingValues(0.dp),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
-        modifier = Modifier.height(Dimensions.AppBarHeight),
+
+        // This does not adjust the position of the bar on older Android versions (like 9)
+        // But it does work on more modern versions (e.g., 16), and it's not a dealbreaker on 9
+        // - the keyboard covers the search text input, but it's still usable
+        modifier = modifier.imePadding(),
         actions = {
 
             IconButton(onClick = {
@@ -58,7 +66,7 @@ fun TextFilterBar(
                     unfocusedIndicatorColor = Color.Transparent
                 ),
 
-                modifier = Modifier.weight(1f).focusRequester(focusRequester)
+                modifier = Modifier.weight(1f)
             )
 
             IconButton(onClick = { filterTextState.clearText() }
@@ -74,6 +82,7 @@ fun TextFilterBar(
 @Composable
 fun SearchBarPreviewText() {
     AppTheme {
-        TextFilterBar(TextFieldState(), FocusRequester()) {}
+        TextFilterBar(TextFieldState(),
+            {}, Modifier)
     }
 }

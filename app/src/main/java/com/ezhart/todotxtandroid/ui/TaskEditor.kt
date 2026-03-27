@@ -20,12 +20,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +50,6 @@ import java.time.LocalDate
 @Composable
 fun TaskEditor(
     editorState: TaskEditorUIState,
-    focusRequester: FocusRequester,
     onClose: () -> Unit,
     onSubmit: (markComplete: Boolean) -> Unit,
     listTagsSelections: (String) -> Map<String, Boolean>
@@ -57,8 +58,18 @@ fun TaskEditor(
         skipPartiallyExpanded = true
     )
 
+    val focusRequester = remember { FocusRequester() }
+
     var isPriorityDialogOpen by remember { mutableStateOf(false) }
     var isTagDialogOpen by remember { mutableStateOf(false) }
+
+    LaunchedEffect(sheetState.currentValue) {
+        when(sheetState.currentValue){
+            SheetValue.Hidden -> focusRequester.freeFocus()
+            SheetValue.Expanded -> focusRequester.requestFocus()
+            SheetValue.PartiallyExpanded -> focusRequester.requestFocus()
+        }
+    }
 
     if (editorState.isOpen) {
 
@@ -69,7 +80,7 @@ fun TaskEditor(
             onDismissRequest = { onClose() },
             sheetState = sheetState,
             dragHandle = {},
-            containerColor = containerColor
+            containerColor = containerColor,
         ) {
 
             Column(modifier = Modifier.padding(top = 16.dp)) {
@@ -90,7 +101,9 @@ fun TaskEditor(
                             unfocusedIndicatorColor = Color.Transparent
                         ),
 
-                        modifier = Modifier.weight(1f).focusRequester(focusRequester)
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(focusRequester)
                     )
 
                     IconButton(
@@ -204,12 +217,10 @@ fun NewTaskPreview() {
         TextFieldState()
     )
 
-    val editorFocusRequester = remember { FocusRequester() }
-
     AppTheme {
         Surface {
             TaskEditor(
-                state, editorFocusRequester,{}, {}, { mapOf() }
+                state, {}, {}, { mapOf() }
             )
         }
     }
@@ -226,12 +237,11 @@ fun EditTaskPreview() {
         TextFieldState()
     )
 
-    val editorFocusRequester = remember { FocusRequester() }
 
     AppTheme {
         Surface {
             TaskEditor(
-                state, editorFocusRequester,{}, {}, { mapOf() }
+                state, {}, {}, { mapOf() }
             )
         }
     }

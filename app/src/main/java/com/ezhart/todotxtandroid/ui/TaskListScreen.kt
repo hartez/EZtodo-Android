@@ -2,11 +2,8 @@ package com.ezhart.todotxtandroid.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,7 +51,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     val snackBarHostState = remember { SnackbarHostState() }
 
     val filterBarFocusRequester = remember { FocusRequester() }
-    val editorFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
         viewModel.loadTasksAtStartup()
@@ -64,15 +61,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             filterBarFocusRequester.requestFocus()
         }else{
             filterBarFocusRequester.freeFocus()
-        }
-    }
-
-    LaunchedEffect(editorUIState.isOpen) {
-        if(editorUIState.isOpen){
-            editorFocusRequester.requestFocus()
-        }
-        else{
-            editorFocusRequester.freeFocus()
         }
     }
 
@@ -114,8 +102,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                     Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
                 })
             },
-            contentWindowInsets = WindowInsets.safeContent,
-            modifier = Modifier.imePadding(),
             bottomBar = {
                 if (!isInTextFilterMode) {
                     AppBar(
@@ -124,13 +110,17 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         showSearch = { isInTextFilterMode = true }
                     )
                 } else {
-                    TextFilterBar(viewModel.textFilterEditor, filterBarFocusRequester) {
-                        isInTextFilterMode = false
-                    }
+                    TextFilterBar(viewModel.textFilterEditor,
+                        { isInTextFilterMode = false },
+                        modifier = Modifier
+                            .focusRequester(filterBarFocusRequester)
+
+
+                    )
                 }
             },
             floatingActionButton = {
-                if (!isInTextFilterMode) {
+                if (!isInTextFilterMode && !editorUIState.isOpen) {
                     FloatingActionButton(
                         onClick = {
                             viewModel.editNewTask()
@@ -146,9 +136,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 onRefresh = {
                     viewModel.refreshTasks()
                 },
-                modifier = Modifier.padding(scaffoldPadding)
-                    .consumeWindowInsets(scaffoldPadding)
-                    .imePadding()
+                modifier = Modifier.consumeWindowInsets(scaffoldPadding).padding(scaffoldPadding)
             ) {
                 TaskList(
                     uiState.filteredTasks, uiState.headerText, subHeaderText = uiState.subHeaderText,
@@ -180,7 +168,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
             TaskEditor(
                 editorUIState,
-                editorFocusRequester,
                 {
                     viewModel.closeEditor()
                 },
