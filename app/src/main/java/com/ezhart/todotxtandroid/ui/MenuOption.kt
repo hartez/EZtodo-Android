@@ -20,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
+import com.ezhart.todotxtandroid.ui.theme.Dimensions
 
 @Composable
 fun MenuOption(text: String, icon: ImageVector? = null, selected: Boolean, onSelected: () -> Unit) {
@@ -30,8 +30,8 @@ fun MenuOption(text: String, icon: ImageVector? = null, selected: Boolean, onSel
             .fillMaxWidth()
             .background(
                 when (selected) {
-                    true -> MaterialTheme.colorScheme.primaryContainer
-                    else -> MaterialTheme.colorScheme.background
+                    true -> MaterialTheme.colorScheme.tertiaryContainer
+                    else -> MaterialTheme.colorScheme.surface
                 }
             )
             .clickable {
@@ -48,16 +48,12 @@ fun MenuOption(text: String, icon: ImageVector? = null, selected: Boolean, onSel
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                tint = when(selected) {
-                    true ->  MaterialTheme.colorScheme.onPrimaryContainer
-                    false -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
             )
         } else{
             Spacer(Modifier.width(32.dp))
         }
         Spacer(Modifier.width(16.dp))
-        Text(text = text, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Text(text = text)
     }
 }
 

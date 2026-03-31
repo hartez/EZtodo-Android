@@ -13,15 +13,14 @@ import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ezhart.todotxtandroid.ui.theme.Dimensions
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
+import com.ezhart.todotxtandroid.ui.theme.Dimensions
 
 @Composable
 fun ExpandingOption(
@@ -49,19 +48,16 @@ fun ExpandingOption(
 
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.Label,
-                contentDescription = text,
-                tint = when(expanded) {
-                    true ->  MaterialTheme.colorScheme.onPrimaryContainer
-                    false -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                contentDescription = text
             )
             Spacer(Modifier.width(16.dp))
-            Text(text = text, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(text = text
+            //    , color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
             Spacer(Modifier.weight(1f))
             Icon(
                 imageVector = expansionIcon,
-                contentDescription = text,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                contentDescription = text
             )
         }
 

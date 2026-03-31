@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -78,4 +79,5 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.datastore:datastore:1.0.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.10.5")
 }

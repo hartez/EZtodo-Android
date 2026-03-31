@@ -157,6 +157,7 @@ fun Header(text: String, subHeading: String, height: Dp, modifier: Modifier = Mo
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Left,
                 fontSize = fontSize
             )

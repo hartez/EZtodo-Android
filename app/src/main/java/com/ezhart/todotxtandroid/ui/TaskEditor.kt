@@ -73,7 +73,8 @@ fun TaskEditor(
 
     if (editorState.isOpen) {
 
-        val containerColor = MaterialTheme.colorScheme.secondaryContainer
+        val containerColor = MaterialTheme.colorScheme.tertiary
+        val textColor = MaterialTheme.colorScheme.onTertiary
         val textEditorState = editorState.textEditorState
 
         ModalBottomSheet(
@@ -89,12 +90,12 @@ fun TaskEditor(
                     TextField(
                         state = textEditorState,
                         placeholder = {
-                            Text(
-                                "enter task", color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text("enter task")
                         },
                         lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
                         colors = TextFieldDefaults.colors(
+                            focusedTextColor = textColor,
+                            unfocusedTextColor = textColor,
                             focusedContainerColor = containerColor,
                             unfocusedContainerColor = containerColor,
                             focusedIndicatorColor = Color.Transparent,
