@@ -37,9 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.ColorUtils
 import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
 import com.ezhart.todotxtandroid.viewmodels.TaskEditorMode
@@ -64,7 +66,7 @@ fun TaskEditor(
     var isTagDialogOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(sheetState.currentValue) {
-        when(sheetState.currentValue){
+        when (sheetState.currentValue) {
             SheetValue.Hidden -> focusRequester.freeFocus()
             SheetValue.Expanded -> focusRequester.requestFocus()
             SheetValue.PartiallyExpanded -> focusRequester.requestFocus()
@@ -73,9 +75,17 @@ fun TaskEditor(
 
     if (editorState.isOpen) {
 
-        val containerColor = MaterialTheme.colorScheme.tertiary
-        val textColor = MaterialTheme.colorScheme.onTertiary
+        val containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        val textColor = MaterialTheme.colorScheme.onTertiaryContainer
         val textEditorState = editorState.textEditorState
+
+        val placeholderColor = Color(
+            ColorUtils.blendARGB(
+                MaterialTheme.colorScheme.onTertiaryContainer.toArgb(),
+                Color.White.toArgb(),
+                0.2f
+            )
+        )
 
         ModalBottomSheet(
             onDismissRequest = { onClose() },
@@ -90,7 +100,10 @@ fun TaskEditor(
                     TextField(
                         state = textEditorState,
                         placeholder = {
-                            Text("enter task")
+                            Text(
+                                "enter task",
+                                color = placeholderColor
+                            )
                         },
                         lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
                         colors = TextFieldDefaults.colors(
