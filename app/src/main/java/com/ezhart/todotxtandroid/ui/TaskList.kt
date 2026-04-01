@@ -92,7 +92,6 @@ fun TaskList(
 
     LazyColumn(
         modifier = modifier
-            //.fillMaxSize()
             .nestedScroll(connection)
     ) {
 
@@ -110,16 +109,14 @@ fun TaskList(
                         "Toggle Complete",
                         MaterialTheme.colorScheme.primaryContainer,
                         MaterialTheme.colorScheme.onPrimaryContainer,
-                        Icons.Outlined.Check,
-                        { onToggleCompleted(it) }
-                    ),
+                        Icons.Outlined.Check
+                    ) { onToggleCompleted(it) },
                     startToEndOption = SwipeOption(
                         "Edit",
                         MaterialTheme.colorScheme.secondaryContainer,
                         MaterialTheme.colorScheme.onSecondaryContainer,
-                        Icons.Outlined.Edit,
-                        { onEdit(it) }
-                    ),
+                        Icons.Outlined.Edit
+                    ) { onEdit(it) },
                 )
             )
             if (index < tasks.lastIndex)

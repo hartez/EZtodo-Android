@@ -52,7 +52,15 @@ fun TaskItem(
     swipeOptions: TaskSwipeOptions
 ) {
 
-    val swipeToDismissBoxState = rememberSwipeToDismissBoxState()
+    val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
+        /*
+        Right now the swipe is way too sensitive; in theory we could change the positionalThreshold
+        to help with that, but there seems to be a bug:
+        https://issuetracker.google.com/issues/471021165
+        When it's addressed, we'll revisit this.
+        positionalThreshold = with(LocalDensity.current) { { 112.dp.toPx() } }
+        */
+    )
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -60,7 +68,6 @@ fun TaskItem(
         swipeToDismissBoxState,
         enableDismissFromEndToStart = swipeOptions.endToStartOption != null,
         enableDismissFromStartToEnd = swipeOptions.startToEndOption != null,
-
         backgroundContent = {
             SwipeActionBackground(swipeToDismissBoxState.dismissDirection, swipeOptions)
         },
@@ -359,16 +366,14 @@ fun SwipeBackgroundPreview() {
             label = "MARK COMPLETE",
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
-            icon = Icons.Outlined.Check,
-            {}
-        ),
+            icon = Icons.Outlined.Check
+        ) {},
         startToEndOption = SwipeOption(
             label = "EDIT",
             MaterialTheme.colorScheme.secondaryContainer,
             MaterialTheme.colorScheme.onSecondaryContainer,
-            icon = Icons.Outlined.Edit,
-            {}
-        ))
+            icon = Icons.Outlined.Edit
+        ) {})
 
     AppTheme {
         Surface {
