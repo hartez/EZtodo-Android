@@ -137,6 +137,8 @@ class TasksViewModel(
 
         val all = allProjects(tasks.value) + allContexts(tasks.value)
 
+        // TODO Verify that this ordering gets preserved as we expect; if not, this is where the problem is
+        // otherwise, the stuff in TagsDialog is probably reordering stuff
         return all.associateWith { tag ->
             (selectedContexts.contains(tag) || selectedProjects.contains(tag))
         }

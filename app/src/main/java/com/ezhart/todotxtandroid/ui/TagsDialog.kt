@@ -32,9 +32,8 @@ fun TagsDialog(
     options: Map<String, Boolean>,
     onSubmit: (Map<String, Boolean>) -> Unit
 ) {
-    // TODO you found this next bit on a SO post; learn what it does (what's the * operator here?)
     val selections =
-        remember { mutableStateMapOf(*options.map { (k, v) -> k to v }.toTypedArray()) }
+        remember { mutableStateMapOf(*(options.map { (k, v) -> k to v }.toTypedArray())) }
 
     Box(
         contentAlignment = Alignment.Center,
@@ -53,7 +52,7 @@ fun TagsDialog(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Select Projects & Contexts",
+                        text = "Projects & Contexts",
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier
@@ -68,7 +67,7 @@ fun TagsDialog(
                 ) {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
-                        for (selection in selections) {
+                        for (selection in selections.toSortedMap()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

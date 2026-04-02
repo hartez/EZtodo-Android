@@ -2,7 +2,9 @@ package com.ezhart.todotxtandroid.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -88,7 +90,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
         }
     }
 
-    BackHandler(uiState.shouldHandleBackNavigation) {
+    BackHandler(!WindowInsets.isImeVisible && uiState.shouldHandleBackNavigation) {
         // TODO Hitting the back button while the text filter editor is open should switch back to
         // the default app bar. But the viewModel doesn't know about the search bar state, so we'd need
         // to add that to the taskListUIState
