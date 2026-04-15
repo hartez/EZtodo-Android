@@ -1,16 +1,15 @@
 package com.ezhart.todotxtandroid.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -25,9 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,21 +47,11 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var isMenuSheetOpen by remember { mutableStateOf(false) }
-    var isInTextFilterMode by remember { mutableStateOf(false) }
-    val snackBarHostState = remember { SnackbarHostState() }
 
-    val filterBarFocusRequester = remember { FocusRequester() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.loadTasksAtStartup()
-    }
-
-    LaunchedEffect(isInTextFilterMode) {
-        if(isInTextFilterMode){
-            filterBarFocusRequester.requestFocus()
-        }else{
-            filterBarFocusRequester.freeFocus()
-        }
     }
 
     LaunchedEffect(messageUIState) {
@@ -103,54 +91,48 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 SnackbarHost(hostState = snackBarHostState, snackbar = {
                     Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
                 })
-            },
-            bottomBar = {
-                if (!isInTextFilterMode) {
-                    AppBar(
-                        { isFilterSheetOpen = true },
-                        { isMenuSheetOpen = true },
-                        showSearch = { isInTextFilterMode = true }
-                    )
-                } else {
-                    TextFilterBar(viewModel.textFilterEditor,
-                        { isInTextFilterMode = false },
-                        modifier = Modifier
-                            .focusRequester(filterBarFocusRequester)
-
-
-                    )
-                }
-            },
-            floatingActionButton = {
-                if (!isInTextFilterMode && !editorUIState.isOpen) {
-                    FloatingActionButton(
-                        onClick = {
-                            viewModel.editNewTask()
-                        }
-                    ) {
-                        Icon(Icons.Outlined.Add, "Add Task")
-                    }
-                }
             }
         ) { scaffoldPadding ->
-            PullToRefreshBox(
-                isRefreshing = viewModel.isRefreshing,
-                onRefresh = {
-                    viewModel.refreshTasks()
-                },
-                modifier = Modifier.consumeWindowInsets(scaffoldPadding).padding(scaffoldPadding)
+
+            Box(
+                modifier = Modifier.fillMaxSize()
             ) {
-                TaskList(
-                    uiState.filteredTasks, uiState.headerText, subHeaderText = uiState.subHeaderText,
-                    { viewModel.selectTask(it) },
-                    onToggleCompleted = {
-                        viewModel.toggleCompleted(it)
+                PullToRefreshBox(
+                    isRefreshing = viewModel.isRefreshing,
+                    onRefresh = {
+                        viewModel.refreshTasks()
                     },
-                    onEdit = {
-                        viewModel.selectTask(it, false)
-                        viewModel.editSelectedTask()
-                    }
-                )
+                    modifier = Modifier
+                        .consumeWindowInsets(scaffoldPadding)
+                        .padding(scaffoldPadding)
+                ) {
+                    TaskList(
+                        uiState.filteredTasks,
+                        uiState.headerText,
+                        subHeaderText = uiState.subHeaderText,
+                        { viewModel.selectTask(it) },
+                        onToggleCompleted = {
+                            viewModel.toggleCompleted(it)
+                        },
+                        onEdit = {
+                            viewModel.selectTask(it, false)
+                            viewModel.editSelectedTask()
+                        }
+                    )
+                }
+
+                if(!editorUIState.isOpen) {
+                    // TODO a nicer way to handle this might be to animate the toolbar offscreen while editing
+                    TaskListToolbar(
+                        { isFilterSheetOpen = true },
+                        { isMenuSheetOpen = true },
+                        onCreateTask = { viewModel.editNewTask() },
+                        viewModel.textFilterEditor,
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp)
+                            .imePadding()
+                    )
+                }
             }
 
             FiltersSheet(
