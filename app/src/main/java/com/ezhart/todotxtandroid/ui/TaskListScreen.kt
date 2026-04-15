@@ -91,20 +91,32 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 SnackbarHost(hostState = snackBarHostState, snackbar = {
                     Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
                 })
-            }
+            },
+//            bottomBar = {
+//                TaskListToolbar(
+//                    { isFilterSheetOpen = true },
+//                    { isMenuSheetOpen = true },
+//                    onCreateTask = { viewModel.editNewTask() },
+//                    viewModel.textFilterEditor,
+////                    modifier = Modifier.align(Alignment.BottomCenter)
+////
+////                        .consumeWindowInsets(scaffoldPadding)
+////                        .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
+////                        .padding(scaffoldPadding)
+////                        .imePadding()
+//                )
+//            }
         ) { scaffoldPadding ->
 
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().consumeWindowInsets(scaffoldPadding)
+                    .padding(scaffoldPadding)
             ) {
                 PullToRefreshBox(
                     isRefreshing = viewModel.isRefreshing,
                     onRefresh = {
                         viewModel.refreshTasks()
-                    },
-                    modifier = Modifier
-                        .consumeWindowInsets(scaffoldPadding)
-                        .padding(scaffoldPadding)
+                    }
                 ) {
                     TaskList(
                         uiState.filteredTasks,
@@ -128,9 +140,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         { isMenuSheetOpen = true },
                         onCreateTask = { viewModel.editNewTask() },
                         viewModel.textFilterEditor,
-                        modifier = Modifier.align(Alignment.BottomCenter)
-                            .padding(bottom = 16.dp)
-                            .imePadding()
+                        modifier = Modifier.align(Alignment.BottomCenter).imePadding()
                     )
                 }
             }

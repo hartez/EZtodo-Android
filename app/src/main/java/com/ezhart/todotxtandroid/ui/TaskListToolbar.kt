@@ -5,14 +5,14 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingToolbarDefaults.VibrantFloatingActionButton
 import androidx.compose.material3.FloatingToolbarHorizontalFabPosition
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
@@ -59,7 +59,7 @@ fun TaskListToolbar(
         floatingActionButtonPosition = FloatingToolbarHorizontalFabPosition.Start,
         floatingActionButton = {
 
-            FloatingActionButton(
+            VibrantFloatingActionButton(
                 onClick = {
                     onCreateTask()
                 }
@@ -72,21 +72,27 @@ fun TaskListToolbar(
     ) {
 
         if (isInTextFilterMode) {
-            IconButton(onClick = {
-                filterTextState.clearText()
-                isInTextFilterMode = false
-            }
-            ) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
-            }
+
             TextField(
+
                 state = filterTextState,
-                placeholder = { Text("Filter…") },
+                placeholder = { Text("Search…") },
                 lineLimits = TextFieldLineLimits.SingleLine,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
+
+                leadingIcon = {
+                    IconButton(onClick = {
+                        filterTextState.clearText()
+                        isInTextFilterMode = false
+                    }
+                    ) {
+                        Icon(Icons.Outlined.SearchOff, contentDescription = "Close Search")
+                    }
+                },
+
                 trailingIcon = {
                     IconButton(onClick = { filterTextState.clearText() }
                     ) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -119,8 +120,12 @@ fun TaskList(
                     ) { onEdit(it) },
                 )
             )
-            if (index < tasks.lastIndex)
+            if (index < tasks.lastIndex) {
                 HorizontalDivider()
+            } else{
+                // This allows us to scroll up above the floating toolbar, should we decide to keep it
+                Spacer(modifier.height(64.dp + 16.dp))
+            }
         }
     }
 }
