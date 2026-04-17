@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
 
+// TODO If the selected option is out of view when the filter sheet is opened, the sheet should scroll it into view
+
 @Composable
 fun ExpandingOption(
     text: String,
@@ -51,9 +53,7 @@ fun ExpandingOption(
                 contentDescription = text
             )
             Spacer(Modifier.width(16.dp))
-            Text(text = text
-            //    , color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            Text(text = text)
             Spacer(Modifier.weight(1f))
             Icon(
                 imageVector = expansionIcon,
@@ -63,7 +63,7 @@ fun ExpandingOption(
 
         if (expanded) {
             Column {
-                for(option in options){
+                for (option in options) {
                     MenuOption(
                         text = option,
                         null,

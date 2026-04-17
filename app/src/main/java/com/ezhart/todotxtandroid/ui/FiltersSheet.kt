@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +34,7 @@ import com.ezhart.todotxtandroid.data.Filter
 import com.ezhart.todotxtandroid.data.PendingFilter
 import com.ezhart.todotxtandroid.data.ProjectFilter
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
+import kotlinx.coroutines.launch
 
 enum class ExpandedOption {
     None,
@@ -48,90 +50,112 @@ fun FiltersSheet(
     open: Boolean, onClose: () -> Unit,
     onUpdateFilter: (Filter) -> Unit, selectedFilter: Any
 ) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var expandedOption by remember { mutableStateOf(ExpandedOption.None) }
 
-    if (open) {
-        ModalBottomSheet(
-            onDismissRequest = { onClose() },
-            sheetState = sheetState
-        ) {
-            // Sheet content
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxWidth()
-            ) {
+    if (!open) {
+        return
+    }
 
-                MenuOption("All Tasks", Icons.Outlined.Inbox, selectedFilter is AllTasksFilter) {
+    ModalBottomSheet(
+        onDismissRequest = { onClose() },
+        sheetState = sheetState
+    ) {
+
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        ) {
+
+            MenuOption("All Tasks", Icons.Outlined.Inbox, selectedFilter is AllTasksFilter) {
+                scope.launch {
+                    sheetState.hide()
                     onUpdateFilter(AllTasksFilter)
                     expandedOption = ExpandedOption.None
                     onClose()
                 }
+            }
 
-                MenuOption("Due", Icons.Outlined.Timer, selectedFilter is DueFilter) {
+            MenuOption("Due", Icons.Outlined.Timer, selectedFilter is DueFilter) {
+                scope.launch {
+                    sheetState.hide()
                     onUpdateFilter(DueFilter)
                     expandedOption = ExpandedOption.None
                     onClose()
                 }
+            }
 
-                MenuOption(
-                    "Pending",
-                    Icons.Outlined.CheckBoxOutlineBlank,
-                    selectedFilter is PendingFilter
-                ) {
+            MenuOption(
+                "Pending",
+                Icons.Outlined.CheckBoxOutlineBlank,
+                selectedFilter is PendingFilter
+            ) {
+                scope.launch {
+                    sheetState.hide()
                     onUpdateFilter(PendingFilter)
                     expandedOption = ExpandedOption.None
                     onClose()
                 }
+            }
 
-                MenuOption("Completed", Icons.Outlined.Check, selectedFilter is CompletedFilter) {
+            MenuOption("Completed", Icons.Outlined.Check, selectedFilter is CompletedFilter) {
+                scope.launch {
+                    sheetState.hide()
                     onUpdateFilter(CompletedFilter)
                     expandedOption = ExpandedOption.None
                     onClose()
                 }
+            }
 
-                HorizontalDivider()
+            HorizontalDivider()
 
-                ExpandingOption(
-                    "Projects",
-                    expandedOption == ExpandedOption.Projects,
-                    {
-                        expandedOption = if (expandedOption == ExpandedOption.Projects) {
-                            ExpandedOption.None
-                        } else {
-                            ExpandedOption.Projects
-                        }
-                    },
-                    allProjects,
-                    selectedOption(selectedFilter)
-                ) {
+            ExpandingOption(
+                "Projects",
+                expandedOption == ExpandedOption.Projects,
+                {
+                    expandedOption = if (expandedOption == ExpandedOption.Projects) {
+                        ExpandedOption.None
+                    } else {
+                        ExpandedOption.Projects
+                    }
+                },
+                allProjects,
+                selectedOption(selectedFilter)
+            ) {
+
+                scope.launch {
+                    sheetState.hide()
                     onUpdateFilter(ProjectFilter(it))
                     onClose()
                 }
 
-                ExpandingOption(
-                    "Contexts",
-                    expandedOption == ExpandedOption.Contexts,
-                    {
-                        expandedOption = if (expandedOption == ExpandedOption.Contexts) {
-                            ExpandedOption.None
-                        } else {
-                            ExpandedOption.Contexts
-                        }
-                    },
-                    allContexts,
-                    selectedOption(selectedFilter)
-                ) {
+            }
+
+            ExpandingOption(
+                "Contexts",
+                expandedOption == ExpandedOption.Contexts,
+                {
+                    expandedOption = if (expandedOption == ExpandedOption.Contexts) {
+                        ExpandedOption.None
+                    } else {
+                        ExpandedOption.Contexts
+                    }
+                },
+                allContexts,
+                selectedOption(selectedFilter)
+            ) {
+
+                scope.launch {
+                    sheetState.hide()
                     onUpdateFilter(ContextFilter(it))
                     onClose()
                 }
 
-                Spacer(Modifier.height(8.dp))
-
             }
+
+            Spacer(Modifier.height(8.dp))
         }
     }
 }

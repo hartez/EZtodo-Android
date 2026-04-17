@@ -91,21 +91,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 SnackbarHost(hostState = snackBarHostState, snackbar = {
                     Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
                 })
-            },
-//            bottomBar = {
-//                TaskListToolbar(
-//                    { isFilterSheetOpen = true },
-//                    { isMenuSheetOpen = true },
-//                    onCreateTask = { viewModel.editNewTask() },
-//                    viewModel.textFilterEditor,
-////                    modifier = Modifier.align(Alignment.BottomCenter)
-////
-////                        .consumeWindowInsets(scaffoldPadding)
-////                        .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
-////                        .padding(scaffoldPadding)
-////                        .imePadding()
-//                )
-//            }
+            }
         ) { scaffoldPadding ->
 
             Box(
@@ -134,7 +120,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 }
 
                 if(!editorUIState.isOpen) {
-                    // TODO a nicer way to handle this might be to animate the toolbar offscreen while editing
+                    // TODO a nicer way to handle this would be to animate the toolbar offscreen while editing
                     TaskListToolbar(
                         { isFilterSheetOpen = true },
                         { isMenuSheetOpen = true },
