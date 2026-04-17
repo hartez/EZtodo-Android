@@ -37,7 +37,8 @@ import com.ezhart.todotxtandroid.ui.theme.AppTheme
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun TaskListToolbar(
     showFilters: () -> Unit,
-    showSettings: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onRefresh: () -> Unit,
     onCreateTask: () -> Unit,
     filterTextState: TextFieldState,
     modifier: Modifier = Modifier,
@@ -45,6 +46,7 @@ fun TaskListToolbar(
 ) {
     var isInTextFilterMode by remember { mutableStateOf(inFilterMode) }
     val filterBarFocusRequester = remember { FocusRequester() }
+    var isToolbarMenuOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(isInTextFilterMode) {
         if (isInTextFilterMode) {
@@ -114,9 +116,18 @@ fun TaskListToolbar(
             }
 
             IconButton(
-                onClick = { showSettings() },
+                onClick = {
+                    isToolbarMenuOpen = !isToolbarMenuOpen
+                },
             ) {
-                Icon(Icons.Outlined.MoreVert, contentDescription = "Settings")
+                Icon(Icons.Outlined.MoreVert, contentDescription = "More")
+
+                ToolbarMenu(
+                    isToolbarMenuOpen,
+                    { isToolbarMenuOpen = false },
+                    onNavigateToSettings = onNavigateToSettings,
+                    onRefresh = onRefresh
+                )
             }
         }
     }
@@ -133,6 +144,7 @@ fun AppBarPreview() {
             {},
             {},
             {},
+            {},
             textFilterEditor,
         )
     }
@@ -146,6 +158,7 @@ fun TextFilterContentPreview() {
 
     AppTheme {
         TaskListToolbar(
+            {},
             {},
             {},
             {},

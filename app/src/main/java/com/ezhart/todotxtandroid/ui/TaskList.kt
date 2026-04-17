@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.times
 import com.ezhart.todotxtandroid.data.Task
 import com.ezhart.todotxtandroid.ui.theme.AppTheme
 import com.ezhart.todotxtandroid.ui.theme.Dimensions
+import com.ezhart.todotxtandroid.ui.theme.Dimensions.ToolBarSafeBottomPadding
 import com.ezhart.todotxtandroid.viewmodels.SwipeOption
 import com.ezhart.todotxtandroid.viewmodels.TaskSwipeOptions
 
@@ -123,8 +124,8 @@ fun TaskList(
             if (index < tasks.lastIndex) {
                 HorizontalDivider()
             } else{
-                // This allows us to scroll up above the floating toolbar, should we decide to keep it
-                Spacer(modifier.height(64.dp + 16.dp))
+                // This allows us to scroll up above the floating toolbar
+                Spacer(modifier.height(ToolBarSafeBottomPadding))
             }
         }
     }

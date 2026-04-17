@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ezhart.todotxtandroid.ui.theme.Dimensions.ToolBarSafeBottomPadding
 import com.ezhart.todotxtandroid.ui.theme.DynamicTheme
 import com.ezhart.todotxtandroid.viewmodels.TasksViewModel
 import kotlinx.coroutines.launch
@@ -46,7 +47,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     val messageUIState = viewModel.messageUIState
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
-    var isMenuSheetOpen by remember { mutableStateOf(false) }
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -88,8 +88,11 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     DynamicTheme {
         Scaffold(
             snackbarHost = {
-                SnackbarHost(hostState = snackBarHostState, snackbar = {
-                    Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
+                SnackbarHost(
+                    hostState = snackBarHostState,
+                    modifier = Modifier.padding(bottom = ToolBarSafeBottomPadding).imePadding(),
+                    snackbar = {
+                        Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
                 })
             }
         ) { scaffoldPadding ->
@@ -122,8 +125,9 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 if(!editorUIState.isOpen) {
                     // TODO a nicer way to handle this would be to animate the toolbar offscreen while editing
                     TaskListToolbar(
-                        { isFilterSheetOpen = true },
-                        { isMenuSheetOpen = true },
+                        showFilters = { isFilterSheetOpen = true },
+                        onNavigateToSettings = onNavigateToSettings,
+                        onRefresh = { viewModel.refreshTasks() },
                         onCreateTask = { viewModel.editNewTask() },
                         viewModel.textFilterEditor,
                         modifier = Modifier.align(Alignment.BottomCenter).imePadding()
@@ -140,11 +144,11 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 uiState.filter
             )
 
-            MenuSheet(
-                isMenuSheetOpen,
-                { isMenuSheetOpen = false },
-                onNavigateToSettings,
-                { viewModel.refreshTasks() })
+//            MenuSheet(
+//                isMenuSheetOpen,
+//                { isMenuSheetOpen = false },
+//                onNavigateToSettings,
+//                { viewModel.refreshTasks() })
 
             TaskEditor(
                 editorUIState,
