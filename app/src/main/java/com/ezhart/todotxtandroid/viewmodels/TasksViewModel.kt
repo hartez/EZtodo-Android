@@ -3,6 +3,7 @@ package com.ezhart.todotxtandroid.viewmodels
 import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.insert
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.getValue
@@ -190,6 +191,11 @@ class TasksViewModel(
     }
 
     fun updateFilter(newFilter: Filter) {
+        // If there's still a pre-filled context or project in the new task editor, clean that up
+        if(newTaskEditor.text.trim() == getTaskPrefill()){
+            newTaskEditor.clearText()
+        }
+
         filter.value = newFilter
     }
 
@@ -209,7 +215,27 @@ class TasksViewModel(
 
     fun editNewTask() {
         editorMode = TaskEditorMode.Create
+        applyTaskPrefill()
         isEditorOpen.value = true
+    }
+
+    fun getTaskPrefill() : String {
+        return when (val filter = filter.value) {
+            is ContextFilter -> filter.context
+            is ProjectFilter -> filter.project
+            else -> ""
+        }
+    }
+
+    fun applyTaskPrefill() {
+        val preset = getTaskPrefill()
+
+        if (preset.isNotEmpty()) {
+            newTaskEditor.edit {
+                this.insert(0, " $preset")
+                this.placeCursorBeforeCharAt(0)
+            }
+        }
     }
 
     fun closeEditor() {
@@ -353,6 +379,7 @@ class TasksViewModel(
     private fun createTask(markComplete: Boolean) {
         var toAdd = newTaskEditor.text.toString()
         newTaskEditor.clearText()
+        applyTaskPrefill()
 
         if (toAdd.isBlank()) {
             return
