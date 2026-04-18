@@ -144,12 +144,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 uiState.filter
             )
 
-//            MenuSheet(
-//                isMenuSheetOpen,
-//                { isMenuSheetOpen = false },
-//                onNavigateToSettings,
-//                { viewModel.refreshTasks() })
-
             TaskEditor(
                 editorUIState,
                 {
