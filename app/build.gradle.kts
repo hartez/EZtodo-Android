@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ezhart.todotxtandroid"
+    namespace = "com.ezhart.eztodo"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.ezhart.todotxtandroid"
+        applicationId = "com.ezhart.eztodo"
         minSdk = 36
         targetSdk = 36
         versionCode = 1
