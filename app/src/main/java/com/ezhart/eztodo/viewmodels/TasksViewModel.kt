@@ -19,8 +19,8 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.ezhart.eztodo.TAG
 import com.ezhart.eztodo.EZtodoApplication
+import com.ezhart.eztodo.TAG
 import com.ezhart.eztodo.data.AllTasksFilter
 import com.ezhart.eztodo.data.CompletedFilter
 import com.ezhart.eztodo.data.ContextFilter
@@ -309,11 +309,11 @@ class TasksViewModel(
 
     fun loadTasksAtStartup() {
         viewModelScope.launch {
-            if (startupLoaded) {
-                // We've already done the app startup sync; just load from disk (in case the background
-                // sync grabbed some new tasks)
-                loadTasks()
-            } else {
+            // Load from local first, then check for remote (otherwise we have a blank task list
+            // while we wait)
+            loadTasks()
+
+            if (!startupLoaded) {
                 startupLoaded = true
                 refreshTasks(settingsRepository.syncOnStart.first())
             }
