@@ -92,7 +92,8 @@ class TasksViewModel(
             FilterSheetUIState(
                 allContexts(tasks),
                 allProjects(tasks),
-                filter
+                filter,
+                this::updateFilter
             )
         }.stateIn(
             viewModelScope,
@@ -127,11 +128,11 @@ class TasksViewModel(
             DetailsDialogUIState(
                 isDetailsOpen,
                 selectedTask,
-                nextTask(),
-                previousTask(),
-                { dismissDetails() },
-                { t -> selectTask(t) },
-                { editSelectedTask() },
+                getNextTask(),
+                getPreviousTask(),
+                this::dismissDetails,
+                this::selectTask,
+                this::editSelectedTask,
                 {
                     if (selectedTask != null) {
                         toggleCompleted(selectedTask)
@@ -164,7 +165,7 @@ class TasksViewModel(
         }
     }
 
-    private fun nextTask(): Task? {
+    private fun getNextTask(): Task? {
         val currentTask = selectedTask.value ?: return null
         val tasks = taskListUIState.value.filteredTasks
 
@@ -176,7 +177,7 @@ class TasksViewModel(
         return tasks[currentIndex + 1]
     }
 
-    private fun previousTask(): Task? {
+    private fun getPreviousTask(): Task? {
         val currentTask = selectedTask.value ?: return null
         val tasks = taskListUIState.value.filteredTasks
 

@@ -30,7 +30,6 @@ import com.ezhart.eztodo.data.AllTasksFilter
 import com.ezhart.eztodo.data.CompletedFilter
 import com.ezhart.eztodo.data.ContextFilter
 import com.ezhart.eztodo.data.DueFilter
-import com.ezhart.eztodo.data.Filter
 import com.ezhart.eztodo.data.PendingFilter
 import com.ezhart.eztodo.data.ProjectFilter
 import com.ezhart.eztodo.ui.theme.AppTheme
@@ -44,13 +43,13 @@ enum class ExpandedOption {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FiltersSheet(
-    uiState: FilterSheetUIState, onClose: () -> Unit, onUpdateFilter: (Filter) -> Unit
+    uiState: FilterSheetUIState, onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var expandedOption by remember { mutableStateOf(ExpandedOption.None) }
 
-    val (contexts, projects, selectedFilter) = uiState
+    val (contexts, projects, selectedFilter, onUpdateFilter) = uiState
 
     ModalBottomSheet(
         onDismissRequest = { onClose() }, sheetState = sheetState
@@ -163,8 +162,7 @@ fun FilterSheetPreview() {
     AppTheme {
         Surface {
             FiltersSheet(
-                uiState, {},
-                onUpdateFilter = {})
+                uiState, {})
         }
     }
 }

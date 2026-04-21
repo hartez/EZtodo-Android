@@ -140,8 +140,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             if (isFilterSheetOpen) {
                 FiltersSheet(
                     filterSheetUIState,
-                    { isFilterSheetOpen = false },
-                    onUpdateFilter = viewModel::updateFilter
+                    { isFilterSheetOpen = false }
                 )
             }
 
