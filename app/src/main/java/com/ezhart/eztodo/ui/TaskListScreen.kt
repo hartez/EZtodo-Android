@@ -48,6 +48,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     val filterSheetUIState by viewModel.filterSheetUIState.collectAsStateWithLifecycle()
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
+    var isDetailsDialogOpen by remember { mutableStateOf(false) }
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -112,12 +113,15 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         taskListUIState.filteredTasks,
                         taskListUIState.headerText,
                         subHeaderText = taskListUIState.subHeaderText,
-                        { viewModel.selectTask(it) },
+                        {
+                            viewModel.selectTask(it)
+                            isDetailsDialogOpen = true
+                        },
                         onToggleCompleted = {
                             viewModel.toggleCompleted(it)
                         },
                         onEdit = {
-                            viewModel.selectTask(it, false)
+                            viewModel.selectTask(it)
                             viewModel.editSelectedTask()
                         })
                 }
@@ -152,9 +156,10 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             }, viewModel::listTagsSelections
             )
 
-            if (detailsDialogUIState.isOpen) {
-                Dialog(detailsDialogUIState.onDismissRequest) {
-                    DetailsDialog(detailsDialogUIState)
+            if (isDetailsDialogOpen) {
+                // TODO feels like this should be consolidatable
+                Dialog({ isDetailsDialogOpen = false }) {
+                    DetailsDialog(detailsDialogUIState, {isDetailsDialogOpen = false})
                 }
             }
         }

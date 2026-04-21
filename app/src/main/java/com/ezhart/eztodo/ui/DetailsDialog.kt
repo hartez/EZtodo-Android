@@ -26,7 +26,7 @@ import com.ezhart.eztodo.viewmodels.DetailsDialogUIState
 import kotlin.math.roundToInt
 
 @Composable
-fun DetailsDialog(uiState: DetailsDialogUIState) {
+fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit) {
     var horizontalDragState by remember { mutableStateOf(AnchoredDraggableState(HorizontalSwipeValue.Current)) }
     var verticalDragState by remember { mutableStateOf(AnchoredDraggableState(VerticalSwipeValue.Current)) }
 
@@ -57,11 +57,12 @@ fun DetailsDialog(uiState: DetailsDialogUIState) {
             }
         }
 
-        when(verticalDragState.settledValue){
+        when (verticalDragState.settledValue) {
             VerticalSwipeValue.Dismiss -> {
-                uiState.onDismissRequest()
+                onDismiss()
             }
-            VerticalSwipeValue.Current -> { }
+
+            VerticalSwipeValue.Current -> {}
             VerticalSwipeValue.Edit -> {
                 uiState.onEditRequest()
             }
@@ -97,7 +98,10 @@ fun DetailsDialog(uiState: DetailsDialogUIState) {
         if (uiState.task != null) {
             DetailsCard(
                 uiState.task,
-                onEditRequest = uiState.onEditRequest,
+                onEditRequest = {
+                    uiState.onEditRequest()
+                    onDismiss()
+                },
                 onToggleCompleted = uiState.onToggleCompleted,
                 modifier = baseModifier
                     .offset {
@@ -154,13 +158,12 @@ enum class VerticalSwipeValue { Dismiss, Current, Edit }
 fun DetailsDialogPreview() {
 
     val uiState = DetailsDialogUIState(
-        true,
         Task("2025-06-04 Buy apples @shopping +pie due:2025-06-06")
     )
 
     AppTheme {
         Surface {
-            DetailsDialog(uiState)
+            DetailsDialog(uiState, {})
         }
     }
 }

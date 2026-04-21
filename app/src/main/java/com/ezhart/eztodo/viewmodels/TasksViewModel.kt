@@ -63,8 +63,6 @@ class TasksViewModel(
 
     private val selectedTask = MutableStateFlow<Task?>(null)
 
-    private val isDetailsOpen = MutableStateFlow(false)
-
     var messageUIState by mutableStateOf(MessageUIState())
         private set
 
@@ -124,14 +122,12 @@ class TasksViewModel(
     )
 
     val detailsDialogUIState: StateFlow<DetailsDialogUIState> =
-        combine(isDetailsOpen, selectedTask) { isDetailsOpen, selectedTask ->
+        selectedTask.map { selectedTask ->
             DetailsDialogUIState(
-                isDetailsOpen,
                 selectedTask,
                 getNextTask(),
                 getPreviousTask(),
-                this::dismissDetails,
-                this::selectTask,
+                onUpdateSelectedTask = this::selectTask,
                 this::editSelectedTask,
                 {
                     if (selectedTask != null) {
@@ -156,11 +152,8 @@ class TasksViewModel(
         }
     }
 
-    fun selectTask(task: Task, showDetails: Boolean = true) {
+    fun selectTask(task: Task) {
         selectedTask.value = task
-        if (showDetails) {
-            showDetails()
-        }
     }
 
     private fun getNextTask(): Task? {
@@ -192,14 +185,14 @@ class TasksViewModel(
         selectedTask.value = null
     }
 
-    fun showDetails() {
-        isDetailsOpen.value = true
-    }
-
-    fun dismissDetails() {
-        isDetailsOpen.value = false
-        clearTaskSelection()
-    }
+//    fun showDetails() {
+//        isDetailsOpen.value = true
+//    }
+//
+//    fun dismissDetails() {
+//        isDetailsOpen.value = false
+//        clearTaskSelection()
+//    }
 
     fun updateFilter(newFilter: Filter) {
         // If there's still a pre-filled context or project in the new task editor, clean that up
@@ -215,8 +208,6 @@ class TasksViewModel(
     }
 
     fun editSelectedTask() {
-        isDetailsOpen.value = false
-
         val taskText = Task.removeCreatedDate(selectedTask.value!!.task)
 
         existingTaskEditor.setTextAndPlaceCursorAtEnd(taskText)
