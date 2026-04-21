@@ -41,10 +41,11 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     val viewModel: TasksViewModel = viewModel(factory = TasksViewModel.Factory)
     val scope = rememberCoroutineScope()
 
-    val uiState by viewModel.taskListUIState.collectAsStateWithLifecycle()
+    val taskListUIState by viewModel.taskListUIState.collectAsStateWithLifecycle()
     val editorUIState by viewModel.editorUIState.collectAsStateWithLifecycle()
     val detailsDialogUIState by viewModel.detailsDialogUIState.collectAsStateWithLifecycle()
     val messageUIState = viewModel.messageUIState
+    val filterSheetUIState by viewModel.filterSheetUIState.collectAsStateWithLifecycle()
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
 
@@ -57,8 +58,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     LaunchedEffect(messageUIState) {
         if (messageUIState.pending) {
             scope.launch {
-                val result = snackBarHostState
-                    .showSnackbar(
+                val result = snackBarHostState.showSnackbar(
                         message = messageUIState.text,
                         actionLabel = messageUIState.actionLabel,
                         duration = messageUIState.duration,
@@ -78,7 +78,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
         }
     }
 
-    BackHandler(!WindowInsets.isImeVisible && uiState.shouldHandleBackNavigation) {
+    BackHandler(!WindowInsets.isImeVisible && taskListUIState.shouldHandleBackNavigation) {
         // TODO Hitting the back button while the text filter editor is open should switch back to
         // the default app bar. But the viewModel doesn't know about the search bar state, so we'd need
         // to add that to the taskListUIState
@@ -90,27 +90,28 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackBarHostState,
-                    modifier = Modifier.padding(bottom = ToolBarSafeBottomPadding).imePadding(),
+                    modifier = Modifier
+                        .padding(bottom = ToolBarSafeBottomPadding)
+                        .imePadding(),
                     snackbar = {
                         Snackbar(it, modifier = Modifier.padding(horizontal = 32.dp))
-                })
-            }
-        ) { scaffoldPadding ->
+                    })
+            }) { scaffoldPadding ->
 
             Box(
-                modifier = Modifier.fillMaxSize().consumeWindowInsets(scaffoldPadding)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .consumeWindowInsets(scaffoldPadding)
                     .padding(scaffoldPadding)
             ) {
                 PullToRefreshBox(
-                    isRefreshing = viewModel.isRefreshing,
-                    onRefresh = {
+                    isRefreshing = viewModel.isRefreshing, onRefresh = {
                         viewModel.refreshTasks()
-                    }
-                ) {
+                    }) {
                     TaskList(
-                        uiState.filteredTasks,
-                        uiState.headerText,
-                        subHeaderText = uiState.subHeaderText,
+                        taskListUIState.filteredTasks,
+                        taskListUIState.headerText,
+                        subHeaderText = taskListUIState.subHeaderText,
                         { viewModel.selectTask(it) },
                         onToggleCompleted = {
                             viewModel.toggleCompleted(it)
@@ -118,11 +119,10 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         onEdit = {
                             viewModel.selectTask(it, false)
                             viewModel.editSelectedTask()
-                        }
-                    )
+                        })
                 }
 
-                if(!editorUIState.isOpen) {
+                if (!editorUIState.isOpen) {
                     // TODO a nicer way to handle this would be to animate the toolbar offscreen while editing
                     TaskListToolbar(
                         showFilters = { isFilterSheetOpen = true },
@@ -130,29 +130,27 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         onRefresh = { viewModel.refreshTasks() },
                         onCreateTask = { viewModel.editNewTask() },
                         viewModel.textFilterEditor,
-                        modifier = Modifier.align(Alignment.BottomCenter).imePadding()
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .imePadding()
                     )
                 }
             }
 
-            FiltersSheet(
-                uiState.allProjects,
-                uiState.allContexts,
-                isFilterSheetOpen,
-                { isFilterSheetOpen = false },
-                onUpdateFilter = viewModel::updateFilter,
-                uiState.filter
-            )
+            if (isFilterSheetOpen) {
+                FiltersSheet(
+                    filterSheetUIState,
+                    { isFilterSheetOpen = false },
+                    onUpdateFilter = viewModel::updateFilter
+                )
+            }
 
             TaskEditor(
-                editorUIState,
-                {
-                    viewModel.closeEditor()
-                },
-                {
-                    viewModel.commitTaskChanges(it)
-                },
-                viewModel::listTagsSelections
+                editorUIState, {
+                viewModel.closeEditor()
+            }, {
+                viewModel.commitTaskChanges(it)
+            }, viewModel::listTagsSelections
             )
 
             if (detailsDialogUIState.isOpen) {

@@ -34,33 +34,26 @@ import com.ezhart.eztodo.data.Filter
 import com.ezhart.eztodo.data.PendingFilter
 import com.ezhart.eztodo.data.ProjectFilter
 import com.ezhart.eztodo.ui.theme.AppTheme
+import com.ezhart.eztodo.viewmodels.FilterSheetUIState
 import kotlinx.coroutines.launch
 
 enum class ExpandedOption {
-    None,
-    Projects,
-    Contexts
+    None, Projects, Contexts
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FiltersSheet(
-    allProjects: List<String>,
-    allContexts: List<String>,
-    open: Boolean, onClose: () -> Unit,
-    onUpdateFilter: (Filter) -> Unit, selectedFilter: Any
+    uiState: FilterSheetUIState, onClose: () -> Unit, onUpdateFilter: (Filter) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var expandedOption by remember { mutableStateOf(ExpandedOption.None) }
 
-    if (!open) {
-        return
-    }
+    val (contexts, projects, selectedFilter) = uiState
 
     ModalBottomSheet(
-        onDismissRequest = { onClose() },
-        sheetState = sheetState
+        onDismissRequest = { onClose() }, sheetState = sheetState
     ) {
 
         Column(
@@ -112,17 +105,13 @@ fun FiltersSheet(
             HorizontalDivider()
 
             ExpandingOption(
-                "Projects",
-                expandedOption == ExpandedOption.Projects,
-                {
+                "Projects", expandedOption == ExpandedOption.Projects, {
                     expandedOption = if (expandedOption == ExpandedOption.Projects) {
                         ExpandedOption.None
                     } else {
                         ExpandedOption.Projects
                     }
-                },
-                allProjects,
-                selectedOption(selectedFilter)
+                }, projects, selectedOption(uiState.selectedFilter)
             ) {
 
                 scope.launch {
@@ -134,17 +123,13 @@ fun FiltersSheet(
             }
 
             ExpandingOption(
-                "Contexts",
-                expandedOption == ExpandedOption.Contexts,
-                {
+                "Contexts", expandedOption == ExpandedOption.Contexts, {
                     expandedOption = if (expandedOption == ExpandedOption.Contexts) {
                         ExpandedOption.None
                     } else {
                         ExpandedOption.Contexts
                     }
-                },
-                allContexts,
-                selectedOption(selectedFilter)
+                }, contexts, selectedOption(selectedFilter)
             ) {
 
                 scope.launch {
@@ -172,14 +157,13 @@ fun selectedOption(filter: Any): String? {
 @Preview("Filter Sheet Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun FilterSheetPreview() {
+
+    val uiState = FilterSheetUIState()
+
     AppTheme {
         Surface {
             FiltersSheet(
-                listOf(),
-                listOf(),
-                true,
-                {},
-                selectedFilter = AllTasksFilter,
+                uiState, {},
                 onUpdateFilter = {})
         }
     }

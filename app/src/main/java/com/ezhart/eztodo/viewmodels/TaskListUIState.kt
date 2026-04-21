@@ -7,9 +7,7 @@ import com.ezhart.eztodo.data.Task
 data class TaskListUIState(
     val filteredTasks: List<Task> = listOf(),
     val filter: Filter = AllTasksFilter,
-    val textFilter: CharSequence = "",
-    val allContexts: List<String> = listOf(),
-    val allProjects: List<String> = listOf()
+    val textFilter: CharSequence = ""
 ) {
     val headerText = when(textFilter.isEmpty()){
         true -> filter.display()

@@ -55,6 +55,7 @@ class TasksViewModel(
 ) :
     ViewModel() {
 
+
     var startupLoaded = false
 
     var isRefreshing by mutableStateOf(false)
@@ -78,14 +79,25 @@ class TasksViewModel(
             TaskListUIState(
                 filterTasks(tasks, filter, textFilter),
                 filter,
-                textFilter,
-                allContexts(tasks),
-                allProjects(tasks)
+                textFilter
             )
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             initialValue = TaskListUIState()
+        )
+
+    val filterSheetUIState: StateFlow<FilterSheetUIState> =
+        combine(filter, tasks) { filter, tasks ->
+            FilterSheetUIState(
+                allContexts(tasks),
+                allProjects(tasks),
+                filter
+            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            initialValue = FilterSheetUIState()
         )
 
     private val isEditorOpen = MutableStateFlow(false)
