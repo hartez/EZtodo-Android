@@ -180,13 +180,7 @@ fun TaskEditor(
                         PriorityDialog(
                             Task.parsePriority(textEditorState.text.toString()),
                             onPrioritySelected = { taskPriority ->
-                                textEditorState.setTextAndPlaceCursorAtEnd(
-                                    Task.editPriority(
-                                        textEditorState.text.toString(),
-                                        taskPriority
-                                    )
-                                )
-
+                                editorState.setPriority(taskPriority)
                                 isPriorityDialogOpen = false
                             }
                         )
@@ -199,12 +193,7 @@ fun TaskEditor(
                             onDismissRequest = { isTagDialogOpen = false },
                             options = listTagsSelections(textEditorState.text.toString()),
                             onSubmit = {
-                                textEditorState.setTextAndPlaceCursorAtEnd(
-                                    Task.editTags(
-                                        textEditorState.text.toString(),
-                                        it.filter { selection -> selection.value }
-                                            .map { selection -> selection.key })
-                                )
+                                editorState.setTags(it)
                                 isPriorityDialogOpen = false
                             }
                         )
@@ -245,7 +234,6 @@ fun EditTaskPreview() {
         TaskEditorMode.Edit,
         TextFieldState()
     )
-
 
     AppTheme {
         Surface {
