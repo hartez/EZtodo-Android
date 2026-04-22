@@ -12,7 +12,8 @@ enum class TaskEditorMode {
 
 data class TaskEditorUIState(
     val mode: TaskEditorMode,
-    val textEditorState: TextFieldState
+    val textEditorState: TextFieldState,
+    // TODO autocomplete options from the flow go here
 ){
     fun setTags(tags: Map<String, Boolean>){
         textEditorState.setTextAndPlaceCursorAtEnd(
@@ -31,6 +32,8 @@ data class TaskEditorUIState(
             )
         )
     }
+
+    // TODO This is where the method that updates the text with the autocomplete selection goes
 }
 
 

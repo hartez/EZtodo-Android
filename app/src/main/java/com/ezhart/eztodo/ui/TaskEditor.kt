@@ -64,6 +64,7 @@ fun TaskEditor(
 
     var isPriorityDialogOpen by remember { mutableStateOf(false) }
     var isTagDialogOpen by remember { mutableStateOf(false) }
+    var isAutoCompleteOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(sheetState.currentValue) {
         when (sheetState.currentValue) {
@@ -204,7 +205,6 @@ fun TaskEditor(
         }
     }
 }
-
 
 @Preview(name = "New Task Light")
 @Preview("New Task Dark", uiMode = UI_MODE_NIGHT_YES)

@@ -87,8 +87,8 @@ class TasksViewModel(
     val filterSheetUIState: StateFlow<FilterSheetUIState> =
         combine(filter, tasks) { filter, tasks ->
             FilterSheetUIState(
-                allContexts(tasks),
-                allProjects(tasks),
+                listContexts(),
+                listProjects(),
                 filter,
                 this::updateFilter
             )
@@ -100,6 +100,9 @@ class TasksViewModel(
 
     private val newTaskEditor = TextFieldState()
     private val existingTaskEditor = TextFieldState()
+
+    private val newTaskText = snapshotFlow { newTaskEditor.text }
+    private val existingTaskText = snapshotFlow { existingTaskEditor.text }
     private val editorMode = MutableStateFlow(TaskEditorMode.Create)
 
     val editorUIState: StateFlow<TaskEditorUIState> = editorMode.map {
@@ -142,7 +145,7 @@ class TasksViewModel(
         val selectedContexts = Task.parseContexts(task)
         val selectedProjects = Task.parseProjects(task)
 
-        val all = allProjects(tasks.value) + allContexts(tasks.value)
+        val all = listProjects(tasks.value) + listContexts(tasks.value)
 
         return all.associateWith { tag ->
             (selectedContexts.contains(tag) || selectedProjects.contains(tag))
@@ -431,12 +434,16 @@ class TasksViewModel(
         return result.distinct().sortedWith(compareBy(Task::taskPriority, Task::completed))
     }
 
-    private fun allProjects(tasks: List<Task>): List<String> {
-        return tasks.flatMap { t -> t.projects }.distinct().sorted()
+    private fun listProjects(): List<String> {
+        return tasks.value.flatMap { t -> t.projects }.distinct().sorted()
     }
 
-    private fun allContexts(tasks: List<Task>): List<String> {
-        return tasks.flatMap { t -> t.contexts }.distinct().sorted()
+    private fun listContexts(): List<String> {
+        return tasks.value.flatMap { t -> t.contexts }.distinct().sorted()
+    }
+
+    private fun getPartialTagMatches(partialTag: String): List<String> {
+        return (listProjects() + listContexts()).filter { it.startsWith(partialTag) }
     }
 
     private fun addTask(task: String) {
