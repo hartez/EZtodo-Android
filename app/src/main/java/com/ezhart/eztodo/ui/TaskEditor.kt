@@ -73,147 +73,144 @@ fun TaskEditor(
         }
     }
 
-    if (editorState.isOpen) {
+    val containerColor = MaterialTheme.colorScheme.tertiaryContainer
+    val textColor = MaterialTheme.colorScheme.onTertiaryContainer
+    val textEditorState = editorState.textEditorState
 
-        val containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        val textColor = MaterialTheme.colorScheme.onTertiaryContainer
-        val textEditorState = editorState.textEditorState
-
-        val placeholderColor = Color(
-            ColorUtils.blendARGB(
-                MaterialTheme.colorScheme.onTertiaryContainer.toArgb(),
-                Color.White.toArgb(),
-                0.2f
-            )
+    val placeholderColor = Color(
+        ColorUtils.blendARGB(
+            MaterialTheme.colorScheme.onTertiaryContainer.toArgb(),
+            Color.White.toArgb(),
+            0.2f
         )
+    )
 
-        ModalBottomSheet(
-            onDismissRequest = { onClose() },
-            sheetState = sheetState,
-            dragHandle = {},
-            containerColor = containerColor,
-        ) {
+    ModalBottomSheet(
+        onDismissRequest = { onClose() },
+        sheetState = sheetState,
+        dragHandle = {},
+        containerColor = containerColor,
+    ) {
 
-            Column(modifier = Modifier.padding(top = 16.dp)) {
+        Column(modifier = Modifier.padding(top = 16.dp)) {
 
-                Row {
-                    TextField(
-                        state = textEditorState,
-                        placeholder = {
-                            Text(
-                                "enter task",
-                                color = placeholderColor
-                            )
-                        },
-                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = textColor,
-                            unfocusedTextColor = textColor,
-                            focusedContainerColor = containerColor,
-                            unfocusedContainerColor = containerColor,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+            Row {
+                TextField(
+                    state = textEditorState,
+                    placeholder = {
+                        Text(
+                            "enter task",
+                            color = placeholderColor
+                        )
+                    },
+                    lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = textColor,
+                        unfocusedTextColor = textColor,
+                        focusedContainerColor = containerColor,
+                        unfocusedContainerColor = containerColor,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
 
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(focusRequester)
+                    modifier = Modifier
+                        .weight(1f)
+                        .focusRequester(focusRequester)
+                )
+
+                IconButton(
+                    onClick = { onSubmit(false) },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.PostAdd, contentDescription = "Create"
                     )
+                }
+            }
 
+            HorizontalDivider()
+
+            Row {
+
+                IconButton(
+                    onClick = { isPriorityDialogOpen = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Flag,
+                        contentDescription = "Priority"
+                    )
+                }
+
+                IconButton(
+                    onClick = { isTagDialogOpen = true },
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.Label,
+                        contentDescription = "Projects/Contexts"
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        textEditorState.setTextAndPlaceCursorAtEnd(
+                            Task.editDueDate(
+                                textEditorState.text.toString(),
+                                LocalDate.now()
+                            )
+                        )
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Today, contentDescription = "Due"
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                if (editorState.mode == TaskEditorMode.Create) {
                     IconButton(
-                        onClick = { onSubmit(false) },
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    ) {
+                        onClick = { onSubmit(true) }) {
                         Icon(
-                            imageVector = Icons.Outlined.PostAdd, contentDescription = "Create"
+                            imageVector = Icons.Outlined.Done, contentDescription = "Done"
                         )
                     }
                 }
 
-                HorizontalDivider()
-
-                Row {
-
-                    IconButton(
-                        onClick = { isPriorityDialogOpen = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Flag,
-                            contentDescription = "Priority"
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { isTagDialogOpen = true },
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.Label,
-                            contentDescription = "Projects/Contexts"
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            textEditorState.setTextAndPlaceCursorAtEnd(
-                                Task.editDueDate(
-                                    textEditorState.text.toString(),
-                                    LocalDate.now()
+                if (isPriorityDialogOpen) {
+                    Dialog(onDismissRequest = { isPriorityDialogOpen = false }) {
+                        PriorityDialog(
+                            Task.parsePriority(textEditorState.text.toString()),
+                            onPrioritySelected = { taskPriority ->
+                                textEditorState.setTextAndPlaceCursorAtEnd(
+                                    Task.editPriority(
+                                        textEditorState.text.toString(),
+                                        taskPriority
+                                    )
                                 )
-                            )
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Today, contentDescription = "Due"
+
+                                isPriorityDialogOpen = false
+                            }
                         )
                     }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    if (editorState.mode == TaskEditorMode.Create) {
-                        IconButton(
-                            onClick = { onSubmit(true) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Done, contentDescription = "Done"
-                            )
-                        }
-                    }
-
-                    if (isPriorityDialogOpen) {
-                        Dialog(onDismissRequest = { isPriorityDialogOpen = false }) {
-                            PriorityDialog(
-                                Task.parsePriority(textEditorState.text.toString()),
-                                onPrioritySelected = { taskPriority ->
-                                    textEditorState.setTextAndPlaceCursorAtEnd(
-                                        Task.editPriority(
-                                            textEditorState.text.toString(),
-                                            taskPriority
-                                        )
-                                    )
-
-                                    isPriorityDialogOpen = false
-                                }
-                            )
-                        }
-                    }
-
-                    if (isTagDialogOpen) {
-                        Dialog(onDismissRequest = { isTagDialogOpen = false }) {
-                            TagsDialog(
-                                onDismissRequest = { isTagDialogOpen = false },
-                                options = listTagsSelections(textEditorState.text.toString()),
-                                onSubmit = {
-                                    textEditorState.setTextAndPlaceCursorAtEnd(
-                                        Task.editTags(
-                                            textEditorState.text.toString(),
-                                            it.filter { selection -> selection.value }
-                                                .map { selection -> selection.key })
-                                    )
-                                    isPriorityDialogOpen = false
-                                }
-                            )
-                        }
-                    }
-
                 }
+
+                if (isTagDialogOpen) {
+                    Dialog(onDismissRequest = { isTagDialogOpen = false }) {
+                        TagsDialog(
+                            onDismissRequest = { isTagDialogOpen = false },
+                            options = listTagsSelections(textEditorState.text.toString()),
+                            onSubmit = {
+                                textEditorState.setTextAndPlaceCursorAtEnd(
+                                    Task.editTags(
+                                        textEditorState.text.toString(),
+                                        it.filter { selection -> selection.value }
+                                            .map { selection -> selection.key })
+                                )
+                                isPriorityDialogOpen = false
+                            }
+                        )
+                    }
+                }
+
             }
         }
     }
@@ -226,7 +223,6 @@ fun TaskEditor(
 fun NewTaskPreview() {
 
     val state = TaskEditorUIState(
-        true,
         TaskEditorMode.Create,
         TextFieldState()
     )
@@ -246,7 +242,6 @@ fun NewTaskPreview() {
 fun EditTaskPreview() {
 
     val state = TaskEditorUIState(
-        true,
         TaskEditorMode.Edit,
         TextFieldState()
     )

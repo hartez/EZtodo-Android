@@ -26,7 +26,7 @@ import com.ezhart.eztodo.viewmodels.DetailsDialogUIState
 import kotlin.math.roundToInt
 
 @Composable
-fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit) {
+fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit, onEditRequest: () -> Unit) {
     var horizontalDragState by remember { mutableStateOf(AnchoredDraggableState(HorizontalSwipeValue.Current)) }
     var verticalDragState by remember { mutableStateOf(AnchoredDraggableState(VerticalSwipeValue.Current)) }
 
@@ -64,7 +64,7 @@ fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit) {
 
             VerticalSwipeValue.Current -> {}
             VerticalSwipeValue.Edit -> {
-                uiState.onEditRequest()
+                onEditRequest()
             }
         }
     }
@@ -98,10 +98,7 @@ fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit) {
         if (uiState.task != null) {
             DetailsCard(
                 uiState.task,
-                onEditRequest = {
-                    uiState.onEditRequest()
-                    onDismiss()
-                },
+                onEditRequest = onEditRequest,
                 onToggleCompleted = uiState.onToggleCompleted,
                 modifier = baseModifier
                     .offset {
@@ -163,7 +160,7 @@ fun DetailsDialogPreview() {
 
     AppTheme {
         Surface {
-            DetailsDialog(uiState, {})
+            DetailsDialog(uiState, {}, {})
         }
     }
 }

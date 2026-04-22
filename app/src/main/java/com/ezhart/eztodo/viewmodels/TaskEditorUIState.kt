@@ -8,7 +8,6 @@ enum class TaskEditorMode {
 }
 
 data class TaskEditorUIState(
-    val isOpen: Boolean,
     val mode: TaskEditorMode,
     val textEditorState: TextFieldState
 )

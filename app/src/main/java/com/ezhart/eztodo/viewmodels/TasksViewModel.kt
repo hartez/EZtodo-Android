@@ -55,7 +55,6 @@ class TasksViewModel(
 ) :
     ViewModel() {
 
-
     var startupLoaded = false
 
     var isRefreshing by mutableStateOf(false)
@@ -99,14 +98,13 @@ class TasksViewModel(
             initialValue = FilterSheetUIState()
         )
 
-    private val isEditorOpen = MutableStateFlow(false)
     private val newTaskEditor = TextFieldState()
     private val existingTaskEditor = TextFieldState()
-    private var editorMode: TaskEditorMode = TaskEditorMode.Create
+    private val editorMode = MutableStateFlow(TaskEditorMode.Create)
 
-    val editorUIState: StateFlow<TaskEditorUIState> = isEditorOpen.map {
+    val editorUIState: StateFlow<TaskEditorUIState> = editorMode.map {
         TaskEditorUIState(
-            it, editorMode, when (editorMode) {
+            editorMode.value, when (editorMode.value) {
                 TaskEditorMode.Create -> newTaskEditor
                 TaskEditorMode.Edit -> existingTaskEditor
             }
@@ -115,8 +113,7 @@ class TasksViewModel(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         initialValue = TaskEditorUIState(
-            isEditorOpen.value,
-            editorMode,
+            editorMode.value,
             newTaskEditor
         )
     )
@@ -127,9 +124,9 @@ class TasksViewModel(
                 selectedTask,
                 getNextTask(),
                 getPreviousTask(),
-                onUpdateSelectedTask = this::selectTask,
-                this::editSelectedTask,
+                onUpdateSelectedTask = ::selectTask,
                 {
+                    // TODO can the null check be move to simplify this?
                     if (selectedTask != null) {
                         toggleCompleted(selectedTask)
                     }
@@ -152,7 +149,7 @@ class TasksViewModel(
         }
     }
 
-    fun selectTask(task: Task) {
+    fun selectTask(task: Task) : Unit {
         selectedTask.value = task
     }
 
@@ -185,20 +182,14 @@ class TasksViewModel(
         selectedTask.value = null
     }
 
-//    fun showDetails() {
-//        isDetailsOpen.value = true
-//    }
-//
-//    fun dismissDetails() {
-//        isDetailsOpen.value = false
-//        clearTaskSelection()
-//    }
-
     fun updateFilter(newFilter: Filter) {
         // If there's still a pre-filled context or project in the new task editor, clean that up
         if(newTaskEditor.text.trim() == getTaskPrefill()){
             newTaskEditor.clearText()
         }
+
+        // If there's a selected task, we should clear that
+        clearTaskSelection()
 
         filter.value = newFilter
     }
@@ -211,14 +202,12 @@ class TasksViewModel(
         val taskText = Task.removeCreatedDate(selectedTask.value!!.task)
 
         existingTaskEditor.setTextAndPlaceCursorAtEnd(taskText)
-        editorMode = TaskEditorMode.Edit
-        isEditorOpen.value = true
+        editorMode.value = TaskEditorMode.Edit
     }
 
     fun editNewTask() {
-        editorMode = TaskEditorMode.Create
+        editorMode.value = TaskEditorMode.Create
         applyTaskPrefill()
-        isEditorOpen.value = true
     }
 
     fun getTaskPrefill() : String {
@@ -238,10 +227,6 @@ class TasksViewModel(
                 this.placeCursorBeforeCharAt(0)
             }
         }
-    }
-
-    fun closeEditor() {
-        isEditorOpen.value = false
     }
 
     fun toggleCompleted(task: Task) {
@@ -272,7 +257,7 @@ class TasksViewModel(
     }
 
     fun commitTaskChanges(markComplete: Boolean) {
-        when (editorMode) {
+        when (editorMode.value) {
             TaskEditorMode.Create -> createTask(markComplete)
             TaskEditorMode.Edit -> updateSelectedTask()
         }
@@ -399,9 +384,8 @@ class TasksViewModel(
         val updatedTask = existingTaskEditor.text.toString()
 
         existingTaskEditor.clearText()
-        isEditorOpen.value = false
+
         clearTaskSelection()
-        editorMode = TaskEditorMode.Create
 
         if (updatedTask.isBlank()) {
             return
