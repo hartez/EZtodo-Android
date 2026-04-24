@@ -45,6 +45,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
+import java.text.CharacterIterator
+import java.text.StringCharacterIterator
 import java.time.LocalDate
 
 class TasksViewModel(
@@ -98,26 +100,31 @@ class TasksViewModel(
             initialValue = FilterSheetUIState()
         )
 
-    private val newTaskEditor = TextFieldState()
-    private val existingTaskEditor = TextFieldState()
+    private val taskCreator = TextFieldState()
+    private val taskEditor = TextFieldState()
 
-    private val newTaskText = snapshotFlow { newTaskEditor.text }
-    private val existingTaskText = snapshotFlow { existingTaskEditor.text }
-    private val editorMode = MutableStateFlow(TaskEditorMode.Create)
+    private val taskCreatorText = snapshotFlow { taskCreator.text }
+    private val taskEditorText = snapshotFlow { taskEditor.text }
 
-    val editorUIState: StateFlow<TaskEditorUIState> = editorMode.map {
+    val taskEditorUIState: StateFlow<TaskEditorUIState> = taskEditorText.map {
         TaskEditorUIState(
-            editorMode.value, when (editorMode.value) {
-                TaskEditorMode.Create -> newTaskEditor
-                TaskEditorMode.Edit -> existingTaskEditor
-            }
+            taskEditor
         )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         initialValue = TaskEditorUIState(
-            editorMode.value,
-            newTaskEditor
+            taskEditor
+        )
+    )
+
+    val taskCreatorUIState: StateFlow<TaskEditorUIState> = taskCreatorText.map {
+        getEditorWithSuggestions(taskCreator)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        initialValue = TaskEditorUIState(
+            taskCreator
         )
     )
 
@@ -128,12 +135,7 @@ class TasksViewModel(
                 getNextTask(),
                 getPreviousTask(),
                 onUpdateSelectedTask = ::selectTask,
-                {
-                    // TODO can the null check be move to simplify this?
-                    if (selectedTask != null) {
-                        toggleCompleted(selectedTask)
-                    }
-                }
+                { toggleCompleted(selectedTask) }
             )
         }.stateIn(
             viewModelScope,
@@ -141,19 +143,23 @@ class TasksViewModel(
             initialValue = DetailsDialogUIState()
         )
 
-    fun listTagsSelections(task: String): Map<String, Boolean> {
+    fun listTagSelections(task: String): Map<String, Boolean> {
         val selectedContexts = Task.parseContexts(task)
         val selectedProjects = Task.parseProjects(task)
 
-        val all = listProjects(tasks.value) + listContexts(tasks.value)
+        val all = listProjects() + listContexts()
 
         return all.associateWith { tag ->
             (selectedContexts.contains(tag) || selectedProjects.contains(tag))
         }
     }
 
-    fun selectTask(task: Task) : Unit {
+    fun selectTask(task: Task) {
         selectedTask.value = task
+        if (selectedTask.value != null) {
+            val taskText = Task.removeCreatedDate(selectedTask.value!!.task)
+            taskEditor.setTextAndPlaceCursorAtEnd(taskText)
+        }
     }
 
     private fun getNextTask(): Task? {
@@ -161,6 +167,7 @@ class TasksViewModel(
         val tasks = taskListUIState.value.filteredTasks
 
         val currentIndex = tasks.indexOf(currentTask)
+
         if (currentIndex >= tasks.count() - 1) {
             return tasks.first()
         }
@@ -181,18 +188,21 @@ class TasksViewModel(
         return tasks[currentIndex - 1]
     }
 
-    fun clearTaskSelection() {
+    private fun clearTaskSelection() {
         selectedTask.value = null
     }
 
     fun updateFilter(newFilter: Filter) {
-        // If there's still a pre-filled context or project in the new task editor, clean that up
-        if(newTaskEditor.text.trim() == getTaskPrefill()){
-            newTaskEditor.clearText()
-        }
-
         // If there's a selected task, we should clear that
         clearTaskSelection()
+
+        // If there's still a pre-filled context or project in the new task editor, clean that up
+        // as long as that's all there is. If there's other data from an unsubmitted Task, just
+        // leave it alone
+        if (taskCreator.text.trim() == getNewTaskPrefill()) {
+            taskCreator.clearText()
+            applyNewTaskPrefill()
+        }
 
         filter.value = newFilter
     }
@@ -201,19 +211,7 @@ class TasksViewModel(
         unwindFilter()
     }
 
-    fun editSelectedTask() {
-        val taskText = Task.removeCreatedDate(selectedTask.value!!.task)
-
-        existingTaskEditor.setTextAndPlaceCursorAtEnd(taskText)
-        editorMode.value = TaskEditorMode.Edit
-    }
-
-    fun editNewTask() {
-        editorMode.value = TaskEditorMode.Create
-        applyTaskPrefill()
-    }
-
-    fun getTaskPrefill() : String {
+    private fun getNewTaskPrefill(): String {
         return when (val filter = filter.value) {
             is ContextFilter -> filter.context
             is ProjectFilter -> filter.project
@@ -221,20 +219,23 @@ class TasksViewModel(
         }
     }
 
-    fun applyTaskPrefill() {
-        val preset = getTaskPrefill()
+    private fun applyNewTaskPrefill() {
+        val preset = getNewTaskPrefill()
 
         if (preset.isNotEmpty()) {
-            newTaskEditor.edit {
+            taskCreator.edit {
                 this.insert(0, " $preset")
                 this.placeCursorBeforeCharAt(0)
             }
         }
     }
 
-    fun toggleCompleted(task: Task) {
+    fun toggleCompleted(task: Task?) {
+        if (task == null) {
+            return
+        }
 
-        val selected = task == selectedTask.value
+        val wasSelected = task == selectedTask.value
 
         val message = when (task.completed) {
             true -> "Task marked pending"
@@ -252,18 +253,51 @@ class TasksViewModel(
 
         val updatedTask = editTask(task, updateTaskText)
 
-        if (selected) {
-            selectedTask.value = updatedTask
+        if (wasSelected) {
+            selectTask(updatedTask)
         }
 
         showActionAlert(message, "Undo") { editTask(updatedTask, undoTaskText) }
     }
 
-    fun commitTaskChanges(markComplete: Boolean) {
-        when (editorMode.value) {
-            TaskEditorMode.Create -> createTask(markComplete)
-            TaskEditorMode.Edit -> updateSelectedTask()
+    /* For the moment, we're just ignoring blank task updates entirely.
+    In the future it may make sense to consider them invalid input in the UI
+    or to use "blanking" a task as a way to delete it. But for now I don't have a
+    string opinion on which it should be, since it's not part of my usage pattern. */
+
+    fun submitTask() {
+        val toAdd = taskCreator.text.toString()
+        taskCreator.clearText()
+        applyNewTaskPrefill()
+
+        if (toAdd.isBlank()) {
+            return
         }
+
+        addTask(toAdd)
+    }
+
+    fun commitTaskChanges() {
+        if (selectedTask.value == null) {
+            Log.e(
+                TAG,
+                "commitTaskChanges was called, but the selected task was null. This... shouldn't happen."
+            )
+            return;
+        }
+
+        val oldTask = selectedTask.value!!
+        val updatedTask = taskEditor.text.toString()
+
+        taskEditor.clearText()
+
+        clearTaskSelection()
+
+        if (updatedTask.isBlank()) {
+            return
+        }
+
+        editTask(oldTask, updatedTask)
     }
 
     fun showAlert(message: String) {
@@ -361,42 +395,6 @@ class TasksViewModel(
         }
     }
 
-    /* For the moment, we're just ignoring blank task updates entirely.
-    In the future it may make sense to consider them invalid input in the UI
-    or to use "blanking" a task as a way to delete it. But for now I don't have a
-    string opinion on which it should be, since it's not part of my usage pattern. */
-
-    private fun createTask(markComplete: Boolean) {
-        var toAdd = newTaskEditor.text.toString()
-        newTaskEditor.clearText()
-        applyTaskPrefill()
-
-        if (toAdd.isBlank()) {
-            return
-        }
-
-        if (markComplete) {
-            toAdd = Task.markCompleted(toAdd, LocalDate.now())
-        }
-
-        addTask(toAdd)
-    }
-
-    private fun updateSelectedTask() {
-        val oldTask = selectedTask.value!!
-        val updatedTask = existingTaskEditor.text.toString()
-
-        existingTaskEditor.clearText()
-
-        clearTaskSelection()
-
-        if (updatedTask.isBlank()) {
-            return
-        }
-
-        editTask(oldTask, updatedTask)
-    }
-
     private fun unwindFilter() {
         if (!textFilterEditor.text.isEmpty()) {
             textFilterEditor.clearText()
@@ -440,6 +438,57 @@ class TasksViewModel(
 
     private fun listContexts(): List<String> {
         return tasks.value.flatMap { t -> t.contexts }.distinct().sorted()
+    }
+
+    private fun getEditorWithSuggestions(textFieldState: TextFieldState): TaskEditorUIState {
+        // If text is selected then don't try to suggest completions
+        if(!textFieldState.selection.collapsed){
+            return TaskEditorUIState(textFieldState)
+        }
+
+        val text = textFieldState.text.toString()
+        val index = textFieldState.selection.end
+
+        val partialTag = findPartialTag(text, index)
+
+        if(partialTag.isBlank()){
+            return TaskEditorUIState(textFieldState)
+        }
+
+        val suggestions = getPartialTagMatches(partialTag)
+
+        if(!suggestions.any()){
+            return TaskEditorUIState(textFieldState)
+        }
+
+        val range = IntRange(index - partialTag.length, index - 1)
+
+        return TaskEditorUIState(textFieldState, suggestions, range)
+    }
+
+    private fun findPartialTag(text : String, index : Int) : String {
+        if(text.isEmpty()){
+            return ""
+        }
+
+        val iterator = StringCharacterIterator(text)
+        iterator.index = index - 1
+        var current = iterator.current()
+
+        val partial = StringBuilder()
+
+        while(current != CharacterIterator.DONE && !current.isWhitespace()){
+            partial.insert(0, current)
+            current = iterator.previous()
+        }
+
+        return if(partial.isEmpty()){
+            ""
+        } else if (partial[0] == '@' || partial[0] == '+') {
+            partial.toString()
+        } else {
+            ""
+        }
     }
 
     private fun getPartialTagMatches(partialTag: String): List<String> {

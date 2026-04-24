@@ -5,15 +5,11 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.data.TaskPriority
 
-enum class TaskEditorMode {
-    Create,
-    Edit
-}
-
 data class TaskEditorUIState(
-    val mode: TaskEditorMode,
     val textEditorState: TextFieldState,
-    // TODO autocomplete options from the flow go here
+    val tagSuggestions: List<String> = listOf(),
+    val tagSuggestionTarget: IntRange = IntRange(0,0),
+    //val tagSuggestionsDismissed: Boolean = false
 ){
     fun setTags(tags: Map<String, Boolean>){
         textEditorState.setTextAndPlaceCursorAtEnd(
@@ -33,7 +29,13 @@ data class TaskEditorUIState(
         )
     }
 
-    // TODO This is where the method that updates the text with the autocomplete selection goes
+    fun acceptSuggestion(suggestion:String){
+        val old = textEditorState.text
+        val new = old.replaceRange(tagSuggestionTarget, "$suggestion ").toString()
+        textEditorState.setTextAndPlaceCursorAtEnd(new)
+    }
 }
+
+
 
 

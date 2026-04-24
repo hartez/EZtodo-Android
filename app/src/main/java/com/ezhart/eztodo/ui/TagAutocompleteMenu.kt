@@ -1,32 +1,35 @@
 package com.ezhart.eztodo.ui
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TagAutocompleteMenu(
-    options: List<String>, onClose: () -> Unit, onSelect: () -> Unit
+    options: List<String>, onClose: () -> Unit, onSelect: (String) -> Unit
 ) {
-    DropdownMenuPopup(
+    DropdownMenu(
         expanded = true,
-        properties = PopupProperties(focusable = false),
         onDismissRequest = { onClose() },
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        properties = PopupProperties(focusable = false),
+        offset = DpOffset(0.dp, (-300).dp),
+        modifier = Modifier.imePadding().height(300.dp)
     ) {
         for (option in options) {
             DropdownMenuItem(
                 text = { Text(option) },
                 onClick = {
                     onClose()
-                    onSelect()
+                    onSelect(option)
                 }
             )
         }

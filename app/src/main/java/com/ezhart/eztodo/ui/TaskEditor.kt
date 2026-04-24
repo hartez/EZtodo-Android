@@ -1,6 +1,7 @@
 package com.ezhart.eztodo.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +11,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
-import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.PostAdd
 import androidx.compose.material.icons.outlined.Today
@@ -44,7 +44,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.ColorUtils
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.ui.theme.AppTheme
-import com.ezhart.eztodo.viewmodels.TaskEditorMode
 import com.ezhart.eztodo.viewmodels.TaskEditorUIState
 import java.time.LocalDate
 
@@ -53,7 +52,7 @@ import java.time.LocalDate
 fun TaskEditor(
     editorState: TaskEditorUIState,
     onClose: () -> Unit,
-    onSubmit: (markComplete: Boolean) -> Unit,
+    onSubmit: () -> Unit,
     listTagsSelections: (String) -> Map<String, Boolean>
 ) {
     val sheetState = rememberModalBottomSheetState(
@@ -64,7 +63,8 @@ fun TaskEditor(
 
     var isPriorityDialogOpen by remember { mutableStateOf(false) }
     var isTagDialogOpen by remember { mutableStateOf(false) }
-    var isAutoCompleteOpen by remember { mutableStateOf(false) }
+
+    //var tagSuggestionsDismissed : Boolean = false
 
     LaunchedEffect(sheetState.currentValue) {
         when (sheetState.currentValue) {
@@ -86,6 +86,8 @@ fun TaskEditor(
         )
     )
 
+
+
     ModalBottomSheet(
         onDismissRequest = { onClose() },
         sheetState = sheetState,
@@ -93,34 +95,50 @@ fun TaskEditor(
         containerColor = containerColor,
     ) {
 
+
+
         Column(modifier = Modifier.padding(top = 16.dp)) {
 
             Row {
-                TextField(
-                    state = textEditorState,
-                    placeholder = {
-                        Text(
-                            "enter task",
-                            color = placeholderColor
-                        )
-                    },
-                    lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        focusedContainerColor = containerColor,
-                        unfocusedContainerColor = containerColor,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
 
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(focusRequester)
-                )
+                Box(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    TextField(
+                        state = textEditorState,
+                        placeholder = {
+                            Text(
+                                "enter task",
+                                color = placeholderColor
+                            )
+                        },
+                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = textColor,
+                            unfocusedTextColor = textColor,
+                            focusedContainerColor = containerColor,
+                            unfocusedContainerColor = containerColor,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+
+                        modifier = Modifier.focusRequester(focusRequester)
+                    )
+
+//                    if (editorState.tagSuggestions.any()) {
+//                        TagAutocompleteMenu(
+//                            editorState.tagSuggestions,
+//                            {  },
+//                            onSelect = {
+//                                editorState.acceptSuggestion(it)
+//                            }
+//                        )
+//                    }
+                }
 
                 IconButton(
-                    onClick = { onSubmit(false) },
+                    onClick = { onSubmit() },
                     modifier = Modifier.align(Alignment.CenterVertically)
                 ) {
                     Icon(
@@ -167,15 +185,6 @@ fun TaskEditor(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (editorState.mode == TaskEditorMode.Create) {
-                    IconButton(
-                        onClick = { onSubmit(true) }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Done, contentDescription = "Done"
-                        )
-                    }
-                }
-
                 if (isPriorityDialogOpen) {
                     Dialog(onDismissRequest = { isPriorityDialogOpen = false }) {
                         PriorityDialog(
@@ -212,7 +221,7 @@ fun TaskEditor(
 fun NewTaskPreview() {
 
     val state = TaskEditorUIState(
-        TaskEditorMode.Create,
+
         TextFieldState()
     )
 
@@ -231,7 +240,7 @@ fun NewTaskPreview() {
 fun EditTaskPreview() {
 
     val state = TaskEditorUIState(
-        TaskEditorMode.Edit,
+
         TextFieldState()
     )
 

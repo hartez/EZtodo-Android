@@ -32,7 +32,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ezhart.eztodo.ui.theme.Dimensions.ToolBarSafeBottomPadding
 import com.ezhart.eztodo.ui.theme.DynamicTheme
-import com.ezhart.eztodo.viewmodels.TaskEditorMode
 import com.ezhart.eztodo.viewmodels.TasksViewModel
 import kotlinx.coroutines.launch
 
@@ -43,14 +42,18 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     val taskListUIState by viewModel.taskListUIState.collectAsStateWithLifecycle()
-    val editorUIState by viewModel.editorUIState.collectAsStateWithLifecycle()
+
     val detailsDialogUIState by viewModel.detailsDialogUIState.collectAsStateWithLifecycle()
     val messageUIState = viewModel.messageUIState
     val filterSheetUIState by viewModel.filterSheetUIState.collectAsStateWithLifecycle()
 
     var isFilterSheetOpen by remember { mutableStateOf(false) }
     var isDetailsDialogOpen by remember { mutableStateOf(false) }
+
+    val editorUIState by viewModel.taskEditorUIState.collectAsStateWithLifecycle()
+    val creatorUIState by viewModel.taskCreatorUIState.collectAsStateWithLifecycle()
     var isTaskEditorOpen by remember { mutableStateOf(false) }
+    var isTaskCreatorOpen by remember { mutableStateOf(false) }
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -61,7 +64,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     LaunchedEffect(messageUIState) {
         if (messageUIState.pending) {
 
-            if(isDetailsDialogOpen){
+            if (isDetailsDialogOpen) {
                 messageUIState.onDismiss()
                 return@LaunchedEffect
             }
@@ -130,20 +133,18 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         },
                         onEdit = {
                             viewModel.selectTask(it)
-                            viewModel.editSelectedTask()
                             isTaskEditorOpen = true
                         })
                 }
 
-                if (!isTaskEditorOpen) {
+                if (!(isTaskEditorOpen || isTaskCreatorOpen)) {
                     // TODO a nicer way to handle this would be to animate the toolbar offscreen while editing
                     TaskListToolbar(
                         showFilters = { isFilterSheetOpen = true },
                         onNavigateToSettings = onNavigateToSettings,
                         onRefresh = { viewModel.refreshTasks() },
                         onCreateTask = {
-                            viewModel.editNewTask()
-                            isTaskEditorOpen = true
+                            isTaskCreatorOpen = true
                         },
                         viewModel.textFilterEditor,
                         modifier = Modifier
@@ -165,11 +166,22 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                     editorUIState, {
                         isTaskEditorOpen = false
                     }, {
-                        viewModel.commitTaskChanges(it)
-                        if(editorUIState.mode == TaskEditorMode.Edit){
-                            isTaskEditorOpen = false
-                        }
-                    }, viewModel::listTagsSelections
+                        viewModel.commitTaskChanges()
+                        isTaskEditorOpen = false
+
+                    }, viewModel::listTagSelections
+                )
+            }
+
+            if (isTaskCreatorOpen) {
+                TaskEditor(
+                    editorState = creatorUIState,
+                    {
+                        isTaskCreatorOpen = false
+                    }, {
+                        viewModel.submitTask()
+
+                    }, viewModel::listTagSelections
                 )
             }
 
@@ -177,7 +189,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                 // TODO feels like this should be consolidatable
                 Dialog({ isDetailsDialogOpen = false }) {
                     DetailsDialog(detailsDialogUIState, { isDetailsDialogOpen = false }, {
-                        viewModel.editSelectedTask()
                         isDetailsDialogOpen = false
                         isTaskEditorOpen = true
                     })
