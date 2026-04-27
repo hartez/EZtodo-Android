@@ -103,8 +103,6 @@ fun TaskEditor(
         dragHandle = {},
         containerColor = containerColor
     ) {
-
-
         Column(
             modifier = Modifier
                 .onLayoutRectChanged(callback = {
@@ -161,7 +159,7 @@ fun TaskEditor(
                         },
                         // TODO Can we use the position provider to figure out the distance and re-use it inside the popup?
                         maxHeight = with(LocalDensity.current) { spaceAboveEditor.toDp() - insetsTop.dp },
-                        PaddingValues(start = 16.dp, bottom = 2.dp )
+                        PaddingValues(start = 16.dp, bottom = 2.dp)
                     )
                 }
             }
@@ -203,15 +201,15 @@ fun TaskEditor(
                 }
 
                 if (isPriorityDialogOpen) {
-                    Dialog(onDismissRequest = { isPriorityDialogOpen = false }) {
-                        PriorityDialog(
-                            Task.parsePriority(textEditorState.text.toString()),
-                            onPrioritySelected = { taskPriority ->
-                                editorState.setPriority(taskPriority)
-                                isPriorityDialogOpen = false
-                            }
-                        )
-                    }
+                    PriorityMenu(
+                        Task.parsePriority(textEditorState.text.toString()),
+                        onPrioritySelected = { taskPriority ->
+                            editorState.setPriority(taskPriority)
+                            isPriorityDialogOpen = false
+                        }, onDismissRequest = {
+                            isPriorityDialogOpen = false
+                        }
+                    )
                 }
 
                 if (isTagDialogOpen) {
@@ -226,7 +224,6 @@ fun TaskEditor(
                         )
                     }
                 }
-
             }
         }
     }
