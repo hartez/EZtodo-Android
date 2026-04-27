@@ -104,9 +104,12 @@ class TasksViewModel(
     private val taskEditor = TextFieldState()
 
     private val taskCreatorText = snapshotFlow { taskCreator.text }
-    private val taskEditorText = snapshotFlow { taskEditor.text }
+    private val taskCreatorSelection = snapshotFlow { taskCreator.selection }
 
-    val taskEditorUIState: StateFlow<TaskEditorUIState> = taskEditorText.map {
+    private val taskEditorText = snapshotFlow { taskEditor.text }
+    private val taskEditorSelection = snapshotFlow { taskEditor.selection }
+
+    val taskEditorUIState: StateFlow<TaskEditorUIState> = combine(taskEditorText, taskEditorSelection){
         TaskEditorUIState(
             taskEditor
         )
@@ -118,7 +121,7 @@ class TasksViewModel(
         )
     )
 
-    val taskCreatorUIState: StateFlow<TaskEditorUIState> = taskCreatorText.map {
+    val taskCreatorUIState: StateFlow<TaskEditorUIState> = combine(taskCreatorText, taskCreatorSelection) {
         getEditorWithSuggestions(taskCreator)
     }.stateIn(
         viewModelScope,
@@ -442,7 +445,7 @@ class TasksViewModel(
 
     private fun getEditorWithSuggestions(textFieldState: TextFieldState): TaskEditorUIState {
         // If text is selected then don't try to suggest completions
-        if(!textFieldState.selection.collapsed){
+        if (!textFieldState.selection.collapsed) {
             return TaskEditorUIState(textFieldState)
         }
 
@@ -451,13 +454,18 @@ class TasksViewModel(
 
         val partialTag = findPartialTag(text, index)
 
-        if(partialTag.isBlank()){
+        if (partialTag.isBlank()) {
             return TaskEditorUIState(textFieldState)
         }
 
-        val suggestions = getPartialTagMatches(partialTag)
+        val currentContexts = Task.parseContexts(text)
+        val currentProjects = Task.parseProjects(text)
 
-        if(!suggestions.any()){
+        val suggestions = getPartialTagMatches(partialTag).filter {
+            !currentProjects.contains(it) && !currentContexts.contains(it)
+        }
+
+        if (!suggestions.any()) {
             return TaskEditorUIState(textFieldState)
         }
 
@@ -466,8 +474,8 @@ class TasksViewModel(
         return TaskEditorUIState(textFieldState, suggestions, range)
     }
 
-    private fun findPartialTag(text : String, index : Int) : String {
-        if(text.isEmpty()){
+    private fun findPartialTag(text: String, index: Int): String {
+        if (text.isEmpty() || index <= 0) {
             return ""
         }
 
@@ -477,12 +485,12 @@ class TasksViewModel(
 
         val partial = StringBuilder()
 
-        while(current != CharacterIterator.DONE && !current.isWhitespace()){
+        while (current != CharacterIterator.DONE && !current.isWhitespace()) {
             partial.insert(0, current)
             current = iterator.previous()
         }
 
-        return if(partial.isEmpty()){
+        return if (partial.isEmpty()) {
             ""
         } else if (partial[0] == '@' || partial[0] == '+') {
             partial.toString()

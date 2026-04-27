@@ -8,8 +8,7 @@ import com.ezhart.eztodo.data.TaskPriority
 data class TaskEditorUIState(
     val textEditorState: TextFieldState,
     val tagSuggestions: List<String> = listOf(),
-    val tagSuggestionTarget: IntRange = IntRange(0,0),
-    //val tagSuggestionsDismissed: Boolean = false
+    val tagSuggestionTarget: IntRange = IntRange(0,0)
 ){
     fun setTags(tags: Map<String, Boolean>){
         textEditorState.setTextAndPlaceCursorAtEnd(
