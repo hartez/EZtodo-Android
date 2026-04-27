@@ -2,7 +2,6 @@ package com.ezhart.eztodo.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -103,131 +102,128 @@ fun TaskEditor(
         dragHandle = {},
         containerColor = containerColor
     ) {
-        Column(
+        Row(
             modifier = Modifier
+                .background(color = containerColor)
                 .onLayoutRectChanged(callback = {
                     spaceAboveEditor = it.boundsInRoot.top
                 })
         ) {
-
-            Row(
-                modifier = Modifier.background(color = containerColor)
-            ) {
-                TextField(
-                    state = textEditorState,
-                    placeholder = {
-                        Text(
-                            "enter task",
-                            color = placeholderColor
-                        )
-                    },
-                    lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        focusedContainerColor = containerColor,
-                        unfocusedContainerColor = containerColor,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-
-                    trailingIcon = {
-                        IconButton(
-                            onClick = { onSubmit() },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.PostAdd,
-                                contentDescription = "Create",
-                                tint = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
-                        }
-                    },
-
-                    modifier = Modifier
-                        .focusRequester(focusRequester)
-                        .weight(1f)
-                )
-
-                if (editorState.tagSuggestions.any() && !tagSuggestionsDismissed) {
-                    TagAutocompleteMenu(
-                        editorState.tagSuggestions,
-                        {
-                            tagSuggestionsDismissed = true
-                        },
-                        onSelect = {
-                            editorState.acceptSuggestion(it)
-                        },
-                        // TODO Can we use the position provider to figure out the distance and re-use it inside the popup?
-                        maxHeight = with(LocalDensity.current) { spaceAboveEditor.toDp() - insetsTop.dp },
-                        PaddingValues(start = 16.dp, bottom = 2.dp)
+            TextField(
+                state = textEditorState,
+                placeholder = {
+                    Text(
+                        "enter task",
+                        color = placeholderColor
                     )
-                }
-            }
+                },
+                lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = textColor,
+                    unfocusedTextColor = textColor,
+                    focusedContainerColor = containerColor,
+                    unfocusedContainerColor = containerColor,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
 
-            HorizontalDivider()
-
-            Row {
-
-                IconButton(
-                    onClick = { isPriorityDialogOpen = true }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Flag,
-                        contentDescription = "Priority"
-                    )
-                }
-
-                IconButton(
-                    onClick = { isTagDialogOpen = true },
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Label,
-                        contentDescription = "Projects/Contexts"
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        textEditorState.setTextAndPlaceCursorAtEnd(
-                            Task.editDueDate(
-                                textEditorState.text.toString(),
-                                LocalDate.now()
-                            )
-                        )
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Today, contentDescription = "Due"
-                    )
-                }
-
-                if (isPriorityDialogOpen) {
-                    PriorityMenu(
-                        Task.parsePriority(textEditorState.text.toString()),
-                        onPrioritySelected = { taskPriority ->
-                            editorState.setPriority(taskPriority)
-                            isPriorityDialogOpen = false
-                        }, onDismissRequest = {
-                            isPriorityDialogOpen = false
-                        }
-                    )
-                }
-
-                if (isTagDialogOpen) {
-                    Dialog(onDismissRequest = { isTagDialogOpen = false }) {
-                        TagsDialog(
-                            onDismissRequest = { isTagDialogOpen = false },
-                            options = listTagsSelections(textEditorState.text.toString()),
-                            onSubmit = {
-                                editorState.setTags(it)
-                                isPriorityDialogOpen = false
-                            }
+                trailingIcon = {
+                    IconButton(
+                        onClick = { onSubmit() },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.PostAdd,
+                            contentDescription = "Create",
+                            tint = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
+                },
+
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .weight(1f)
+            )
+
+            if (editorState.tagSuggestions.any() && !tagSuggestionsDismissed) {
+                TagAutocompleteMenu(
+                    editorState.tagSuggestions,
+                    {
+                        tagSuggestionsDismissed = true
+                    },
+                    onSelect = {
+                        editorState.acceptSuggestion(it)
+                    },
+                    // TODO Can we use the position provider to figure out the distance and re-use it inside the popup?
+                    maxHeight = with(LocalDensity.current) { (spaceAboveEditor - insetsTop).toDp() } ,
+                    PaddingValues(start = 16.dp, bottom = 2.dp)
+                )
+            }
+        }
+
+        HorizontalDivider()
+
+        Row {
+
+            IconButton(
+                onClick = { isPriorityDialogOpen = true }) {
+                Icon(
+                    imageVector = Icons.Outlined.Flag,
+                    contentDescription = "Priority"
+                )
+            }
+
+            IconButton(
+                onClick = { isTagDialogOpen = true },
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.Label,
+                    contentDescription = "Projects/Contexts"
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    textEditorState.setTextAndPlaceCursorAtEnd(
+                        Task.editDueDate(
+                            textEditorState.text.toString(),
+                            LocalDate.now()
+                        )
+                    )
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Today, contentDescription = "Due"
+                )
+            }
+
+            if (isPriorityDialogOpen) {
+                PriorityMenu(
+                    Task.parsePriority(textEditorState.text.toString()),
+                    onPrioritySelected = { taskPriority ->
+                        editorState.setPriority(taskPriority)
+                        isPriorityDialogOpen = false
+                    }, onDismissRequest = {
+                        isPriorityDialogOpen = false
+                    }
+                )
+            }
+
+            if (isTagDialogOpen) {
+                Dialog(onDismissRequest = { isTagDialogOpen = false }) {
+                    TagsDialog(
+                        onDismissRequest = { isTagDialogOpen = false },
+                        options = listTagsSelections(textEditorState.text.toString()),
+                        onSubmit = {
+                            editorState.setTags(it)
+                            isPriorityDialogOpen = false
+                        }
+                    )
                 }
             }
         }
     }
 }
+
 
 @Preview(name = "New Task Light")
 @Preview("New Task Dark", uiMode = UI_MODE_NIGHT_YES)
