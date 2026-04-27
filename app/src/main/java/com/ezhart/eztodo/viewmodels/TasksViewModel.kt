@@ -109,27 +109,27 @@ class TasksViewModel(
     private val taskEditorText = snapshotFlow { taskEditor.text }
     private val taskEditorSelection = snapshotFlow { taskEditor.selection }
 
-    val taskEditorUIState: StateFlow<TaskEditorUIState> = combine(taskEditorText, taskEditorSelection){
-        TaskEditorUIState(
-            taskEditor
+    val taskEditorUIState: StateFlow<TaskEditorUIState> =
+        combine(taskEditorText, taskEditorSelection) {
+            getEditorWithSuggestions(taskEditor)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            initialValue = TaskEditorUIState(
+                taskEditor
+            )
         )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        initialValue = TaskEditorUIState(
-            taskEditor
-        )
-    )
 
-    val taskCreatorUIState: StateFlow<TaskEditorUIState> = combine(taskCreatorText, taskCreatorSelection) {
-        getEditorWithSuggestions(taskCreator)
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        initialValue = TaskEditorUIState(
-            taskCreator
+    val taskCreatorUIState: StateFlow<TaskEditorUIState> =
+        combine(taskCreatorText, taskCreatorSelection) {
+            getEditorWithSuggestions(taskCreator)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            initialValue = TaskEditorUIState(
+                taskCreator
+            )
         )
-    )
 
     val detailsDialogUIState: StateFlow<DetailsDialogUIState> =
         selectedTask.map { selectedTask ->
