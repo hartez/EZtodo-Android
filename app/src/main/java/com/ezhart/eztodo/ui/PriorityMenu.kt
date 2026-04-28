@@ -36,12 +36,16 @@ fun PriorityMenu(
 ) {
     DropdownMenuPopup(
         expanded = true,
-        properties = PopupProperties(focusable = false),
+        properties = PopupProperties(
+            focusable = true,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        ),
         onDismissRequest = onDismissRequest,
         modifier = Modifier
-            .padding(16.dp)
+            .padding(32.dp)
             .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.surface)
+            .background(color = MaterialTheme.colorScheme.surfaceContainer)
 
     ) {
         Row {

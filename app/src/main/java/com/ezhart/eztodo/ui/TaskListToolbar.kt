@@ -48,13 +48,7 @@ fun TaskListToolbar(
     val filterBarFocusRequester = remember { FocusRequester() }
     var isToolbarMenuOpen by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isInTextFilterMode) {
-        if (isInTextFilterMode) {
-            filterBarFocusRequester.requestFocus()
-        } else {
-            filterBarFocusRequester.freeFocus()
-        }
-    }
+
 
     HorizontalFloatingToolbar(
         expanded = true,
@@ -103,6 +97,14 @@ fun TaskListToolbar(
                 },
                 modifier = Modifier.focusRequester(filterBarFocusRequester)
             )
+
+            LaunchedEffect(isInTextFilterMode) {
+                if (isInTextFilterMode) {
+                    filterBarFocusRequester.requestFocus()
+                } else {
+                    filterBarFocusRequester.freeFocus()
+                }
+            }
 
         } else {
             IconButton(onClick = { showFilters() }) {

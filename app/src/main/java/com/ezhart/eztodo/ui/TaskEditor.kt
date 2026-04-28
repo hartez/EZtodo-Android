@@ -64,17 +64,8 @@ fun TaskEditor(
 
     val focusRequester = remember { FocusRequester() }
 
-    var isPriorityDialogOpen by remember { mutableStateOf(false) }
+    var isPriorityPopupOpen by remember { mutableStateOf(false) }
     var isTagDialogOpen by remember { mutableStateOf(false) }
-
-    LaunchedEffect(sheetState.currentValue) {
-        when (sheetState.currentValue) {
-            SheetValue.Hidden -> focusRequester.freeFocus()
-            SheetValue.Expanded -> focusRequester.requestFocus()
-            SheetValue.PartiallyExpanded -> focusRequester.requestFocus()
-        }
-    }
-
     var tagSuggestionsDismissed by remember { mutableStateOf(false) }
 
     LaunchedEffect(editorState) {
@@ -102,6 +93,15 @@ fun TaskEditor(
         dragHandle = {},
         containerColor = containerColor
     ) {
+
+        LaunchedEffect(sheetState.currentValue) {
+            when (sheetState.currentValue) {
+                SheetValue.Hidden -> focusRequester.freeFocus()
+                SheetValue.Expanded -> focusRequester.requestFocus()
+                SheetValue.PartiallyExpanded -> focusRequester.requestFocus()
+            }
+        }
+
         Row(
             modifier = Modifier
                 .background(color = containerColor)
@@ -140,8 +140,8 @@ fun TaskEditor(
                 },
 
                 modifier = Modifier
-                    .focusRequester(focusRequester)
                     .weight(1f)
+                    .focusRequester(focusRequester)
             )
 
             if (editorState.tagSuggestions.any() && !tagSuggestionsDismissed) {
@@ -154,7 +154,7 @@ fun TaskEditor(
                         editorState.acceptSuggestion(it)
                     },
                     // TODO Can we use the position provider to figure out the distance and re-use it inside the popup?
-                    maxHeight = with(LocalDensity.current) { (spaceAboveEditor - insetsTop).toDp() } ,
+                    maxHeight = with(LocalDensity.current) { (spaceAboveEditor - insetsTop).toDp() },
                     PaddingValues(start = 16.dp, bottom = 2.dp)
                 )
             }
@@ -165,7 +165,7 @@ fun TaskEditor(
         Row {
 
             IconButton(
-                onClick = { isPriorityDialogOpen = true }) {
+                onClick = { isPriorityPopupOpen = true }) {
                 Icon(
                     imageVector = Icons.Outlined.Flag,
                     contentDescription = "Priority"
@@ -196,14 +196,14 @@ fun TaskEditor(
                 )
             }
 
-            if (isPriorityDialogOpen) {
+            if (isPriorityPopupOpen) {
                 PriorityMenu(
                     Task.parsePriority(textEditorState.text.toString()),
                     onPrioritySelected = { taskPriority ->
                         editorState.setPriority(taskPriority)
-                        isPriorityDialogOpen = false
+                        isPriorityPopupOpen = false
                     }, onDismissRequest = {
-                        isPriorityDialogOpen = false
+                        isPriorityPopupOpen = false
                     }
                 )
             }
@@ -215,7 +215,7 @@ fun TaskEditor(
                         options = listTagsSelections(textEditorState.text.toString()),
                         onSubmit = {
                             editorState.setTags(it)
-                            isPriorityDialogOpen = false
+                            isPriorityPopupOpen = false
                         }
                     )
                 }
