@@ -411,23 +411,29 @@ class TasksViewModel(
         filter: Filter,
         textFilter: CharSequence
     ): List<Task> {
-        var result = when (filter) {
-            is ProjectFilter -> tasks.filter { t -> t.projects.contains(filter.project) }
-            is ContextFilter -> tasks.filter { t -> t.contexts.contains(filter.context) }
-            is DueFilter -> tasks.filter { t -> t.dueDate != null }
-            is PendingFilter -> tasks.filter { t -> !t.completed }
-            is CompletedFilter -> tasks.filter { t -> t.completed }
-            else -> tasks
+
+        val notEmpty: (Task) -> Boolean = { task -> !task.isEmpty }
+
+        val matchesFilter: (Task) -> Boolean = when (filter) {
+            AllTasksFilter -> { _ -> true }
+            CompletedFilter -> { task -> task.completed }
+            DueFilter -> { task -> task.dueDate != null }
+            PendingFilter -> { task -> !task.completed }
+            is ContextFilter -> { task -> task.contexts.contains(filter.context) }
+            is ProjectFilter -> { task -> task.projects.contains(filter.project) }
         }
 
-        if (!textFilter.isBlank()) {
-            result = result.filter { t -> t.body.contains(textFilter, ignoreCase = true) }
+        val matchesText: (Task) -> Boolean = when {
+            textFilter.isBlank() -> {
+                { _ -> true }
+            }
+            else -> {
+                { t -> t.body.contains(textFilter, ignoreCase = true) }
+            }
         }
 
-        // TODO Filter out blank lines (is that a totally blank Task? There might accidentally be
-        // blank lines in the source task file; instead of crashing, we could have a property on
-        // Task like "isEmpty" and then ignore it here. Probably ignore it when we write the task
-        // file back, too.
+        val result = tasks.filter(notEmpty)
+            .filter(matchesFilter).filter(matchesText)
 
         return result.distinct().sortedWith(compareBy(Task::taskPriority, Task::completed))
     }

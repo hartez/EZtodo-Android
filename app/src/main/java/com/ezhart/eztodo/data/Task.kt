@@ -5,6 +5,9 @@ import java.time.LocalDate.parse
 import java.time.format.DateTimeParseException
 
 data class Task(val task: String) {
+
+    val isEmpty: Boolean
+
     val body: String
     val taskPriority: TaskPriority
     val completedDate: LocalDate?
@@ -19,44 +22,29 @@ data class Task(val task: String) {
     init {
         val matchResult = taskRegex.find(task)
 
-        if (matchResult == null) {
-            body = ""
-            taskPriority = NoPriority
-            completed = false
-            completedDate = null
-            createdDate = null
-            dueDate = null
-            metadata = mapOf()
-            projects = setOf()
-            contexts = setOf()
-        } else {
+        isEmpty = matchResult == null
 
-            val groups = matchResult.groups as MatchNamedGroupCollection
+        val groups = matchResult?.groups as MatchNamedGroupCollection?
 
-            var taskBody = groups[BODY]?.value ?: ""
-            completedDate = tryParseDate(groups[COMPLETED_DATE]?.value)
-            createdDate = tryParseDate(groups[CREATED_DATE]?.value)
-            completed = groups[DONE] != null
+        var taskBody = groups?.get(BODY)?.value ?: ""
+        completedDate = tryParseDate(groups?.get(COMPLETED_DATE)?.value)
+        createdDate = tryParseDate(groups?.get(CREATED_DATE)?.value)
+        completed = groups?.get(DONE) != null
 
-            taskPriority = when (val pri = groups[PRIORITY]?.value[0]) {
-                is Char -> Priority(pri)
-                else -> NoPriority
-            }
-
-            metadata = parseMetadata(taskBody)
-            dueDate = tryParseDate(metadata["due"])
-            projects = parseProjects(taskBody)
-            contexts = parseContexts(taskBody)
-
-            // Make sure to strip due:date metadata out of the displayed task body
-            body = when (metadata["due"]) {
-                null -> taskBody
-                else -> taskBody.replace("due:" + metadata["due"], "").trim()
-            }
+        taskPriority = when (val pri = groups?.get(PRIORITY)?.value[0]) {
+            is Char -> Priority(pri)
+            else -> NoPriority
         }
 
-        fun isEmpty():Boolean{
-            
+        metadata = parseMetadata(taskBody)
+        dueDate = tryParseDate(metadata["due"])
+        projects = parseProjects(taskBody)
+        contexts = parseContexts(taskBody)
+
+        // Make sure to strip due:date metadata out of the displayed task body
+        body = when (metadata["due"]) {
+            null -> taskBody
+            else -> taskBody.replace("due:" + metadata["due"], "").trim()
         }
     }
 

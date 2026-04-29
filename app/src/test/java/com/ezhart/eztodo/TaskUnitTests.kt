@@ -232,10 +232,10 @@ class TaskUnitTests {
 
     @Test
     fun empty_task(){
-        // If another todo.txt app uses blank lines to preserve task "numbers" then the source file
+        // If another app uses blank lines to preserve task "numbers" then the source file
         // might have empty lines. We should preserve those lines as we read/write task files.
 
         val task = Task("")
-        assertTrue(task.toString().isEmpty())
+        assertTrue(task.isEmpty)
     }
 }
