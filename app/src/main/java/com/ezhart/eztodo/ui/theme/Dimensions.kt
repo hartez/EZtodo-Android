@@ -10,4 +10,5 @@ object Dimensions {
     val SettingSectionPadding = PaddingValues(start= 32.dp, top=8.dp, bottom=8.dp, end=16.dp)
     val SettingSpacing = 12.dp
     val ToolBarSafeBottomPadding = 64.dp + 16.dp
+    val DialogHeadingPadding = PaddingValues(16.dp, 8.dp)
 }

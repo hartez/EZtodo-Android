@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.data.TaskPriority
+import java.time.LocalDate
 
 data class TaskEditorUIState(
     val textEditorState: TextFieldState,
@@ -32,6 +33,15 @@ data class TaskEditorUIState(
         val old = textEditorState.text
         val new = old.replaceRange(tagSuggestionTarget, "$suggestion ").toString()
         textEditorState.setTextAndPlaceCursorAtEnd(new)
+    }
+
+    fun setDueDate(dueDate: LocalDate){
+        textEditorState.setTextAndPlaceCursorAtEnd(
+            Task.editDueDate(
+                textEditorState.text.toString(),
+                dueDate
+            )
+        )
     }
 }
 

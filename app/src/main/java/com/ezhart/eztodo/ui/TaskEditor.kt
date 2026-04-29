@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.Flag
@@ -43,7 +42,6 @@ import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.ColorUtils
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.ui.theme.AppTheme
@@ -202,33 +200,24 @@ fun TaskEditor(
             }
 
             if (isDueDateDialogOpen) {
-                Dialog(onDismissRequest = { isDueDateDialogOpen = false }) {
-                    DueDateDialog(
-                        onDateSelected = { dueDate ->
-                            textEditorState.setTextAndPlaceCursorAtEnd(
-                                Task.editDueDate(
-                                    textEditorState.text.toString(),
-                                    dueDate
-                                )
-                            )
-                        }, onDismissRequest = {
-                            isDueDateDialogOpen = false
-                        }
-                    )
-                }
+                DueDateDialog(
+                    onDateSelected = { dueDate ->
+                        editorState.setDueDate(dueDate)
+                    }, onDismissRequest = {
+                        isDueDateDialogOpen = false
+                    }
+                )
             }
 
             if (isTagDialogOpen) {
-                Dialog(onDismissRequest = { isTagDialogOpen = false }) {
-                    TagsDialog(
-                        onDismissRequest = { isTagDialogOpen = false },
-                        options = listTagsSelections(textEditorState.text.toString()),
-                        onSubmit = {
-                            editorState.setTags(it)
-                            isPriorityPopupOpen = false
-                        }
-                    )
-                }
+                TagsDialog(
+                    onDismissRequest = { isTagDialogOpen = false },
+                    options = listTagsSelections(textEditorState.text.toString()),
+                    onSubmit = {
+                        editorState.setTags(it)
+                        isPriorityPopupOpen = false
+                    }
+                )
             }
         }
     }
