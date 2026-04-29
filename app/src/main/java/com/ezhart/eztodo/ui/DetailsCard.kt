@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.styleFor
 import com.ezhart.eztodo.ui.theme.AppTheme
+import org.ocpsoft.prettytime.PrettyTime
 import java.time.LocalDate
 
 @Composable
@@ -35,6 +36,8 @@ fun DetailsCard(
     onEditRequest: () -> Unit = {},
     onToggleCompleted: () -> Unit = {},
 ) {
+    val prettyTime = PrettyTime()
+
     Card(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -50,11 +53,7 @@ fun DetailsCard(
                 )
 
                 Text(
-                    text =
-                        when (task.dueDate) {
-                            null -> "No due date"
-                            else -> "Due ${task.dueDate}"
-                        },
+                    text = formatDueDate(task.dueDate, prettyTime),
                     color = when (task.dueDate != null && task.dueDate < LocalDate.now()) {
                         true -> MaterialTheme.colorScheme.error
                         else -> MaterialTheme.colorScheme.onSurface
@@ -100,7 +99,7 @@ fun DetailsCard(
 
             Row {
                 Text(
-                    text = "Created ${task.createdDate.toString()}",
+                    text = formatCreatedDate(task.createdDate, prettyTime),
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -110,15 +109,41 @@ fun DetailsCard(
     }
 }
 
+fun formatCreatedDate(createdDate: LocalDate?, prettyTime: PrettyTime): String {
+    if(createdDate == null){
+        return "[Unknown]"
+    }
+
+    val result = StringBuilder()
+    result.append("Created ${createdDate.toString()}")
+
+    val now = LocalDate.now()
+    if (createdDate.atStartOfDay() == now.atStartOfDay()) {
+        result.append(" (Today)")
+    } else {
+        result.append(" (${prettyTime.format(createdDate)})")
+    }
+
+    return result.toString()
+}
+
+fun formatDueDate(dueDate: LocalDate?, prettyTime: PrettyTime) : String {
+    if(dueDate == null){
+        return "No due date"
+    }
+
+    return "Due ${prettyTime.format(dueDate)}"
+}
+
 @Composable
-fun ShareButton(task:String, context: Context){
+fun ShareButton(task: String, context: Context) {
     val sendIntent = Intent(Intent.ACTION_SEND).apply {
         putExtra(Intent.EXTRA_TEXT, task)
         type = "text/plain"
     }
     val shareIntent = Intent.createChooser(sendIntent, null)
 
-    IconButton(onClick = {context.startActivity(shareIntent, null)}) {
+    IconButton(onClick = { context.startActivity(shareIntent, null) }) {
         Icon(
             imageVector = Icons.Outlined.Share,
             contentDescription = "Share"
