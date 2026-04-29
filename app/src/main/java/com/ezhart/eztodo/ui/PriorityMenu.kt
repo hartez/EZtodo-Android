@@ -104,8 +104,8 @@ fun PriorityMenu(
     }
 }
 
-@Preview(name = "Priority Dialog Light")
-@Preview("Priority Dialog Dark", uiMode = UI_MODE_NIGHT_YES)
+@Preview(name = "Priority Menu Light")
+@Preview("Priority Menu Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PriorityMenuPreview() {
     AppTheme {

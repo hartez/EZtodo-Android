@@ -48,7 +48,6 @@ import androidx.core.graphics.ColorUtils
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.ui.theme.AppTheme
 import com.ezhart.eztodo.viewmodels.TaskEditorUIState
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -65,6 +64,7 @@ fun TaskEditor(
     val focusRequester = remember { FocusRequester() }
 
     var isPriorityPopupOpen by remember { mutableStateOf(false) }
+    var isDueDateDialogOpen by remember { mutableStateOf(false) }
     var isTagDialogOpen by remember { mutableStateOf(false) }
     var tagSuggestionsDismissed by remember { mutableStateOf(false) }
 
@@ -182,14 +182,7 @@ fun TaskEditor(
             }
 
             IconButton(
-                onClick = {
-                    textEditorState.setTextAndPlaceCursorAtEnd(
-                        Task.editDueDate(
-                            textEditorState.text.toString(),
-                            LocalDate.now()
-                        )
-                    )
-                },
+                onClick = { isDueDateDialogOpen = true },
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Today, contentDescription = "Due"
@@ -206,6 +199,23 @@ fun TaskEditor(
                         isPriorityPopupOpen = false
                     }
                 )
+            }
+
+            if (isDueDateDialogOpen) {
+                Dialog(onDismissRequest = { isDueDateDialogOpen = false }) {
+                    DueDateDialog(
+                        onDateSelected = { dueDate ->
+                            textEditorState.setTextAndPlaceCursorAtEnd(
+                                Task.editDueDate(
+                                    textEditorState.text.toString(),
+                                    dueDate
+                                )
+                            )
+                        }, onDismissRequest = {
+                            isDueDateDialogOpen = false
+                        }
+                    )
+                }
             }
 
             if (isTagDialogOpen) {
