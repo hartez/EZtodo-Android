@@ -82,4 +82,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.text.google.fonts.v1105)
     implementation(libs.androidx.compose.material3.v150alpha10)
     implementation("org.ocpsoft.prettytime:prettytime:5.0.8.Final")
+    testImplementation("io.mockk:mockk:1.14.9")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 }

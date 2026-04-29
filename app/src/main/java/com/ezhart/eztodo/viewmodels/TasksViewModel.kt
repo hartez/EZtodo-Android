@@ -11,11 +11,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -52,8 +50,7 @@ import java.time.LocalDate
 class TasksViewModel(
     private val taskFileService: TaskFileService,
     private val dropboxService: DropboxService,
-    private val settingsRepository: SettingsRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val settingsRepository: SettingsRepository
 ) :
     ViewModel() {
 
@@ -87,7 +84,7 @@ class TasksViewModel(
         )
 
     val filterSheetUIState: StateFlow<FilterSheetUIState> =
-        combine(filter, tasks) { filter, tasks ->
+        combine(filter, tasks) { filter, _ ->
             FilterSheetUIState(
                 listContexts(),
                 listProjects(),
@@ -286,7 +283,7 @@ class TasksViewModel(
                 TAG,
                 "commitTaskChanges was called, but the selected task was null. This... shouldn't happen."
             )
-            return;
+            return
         }
 
         val oldTask = selectedTask.value!!
@@ -545,7 +542,6 @@ class TasksViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val savedStateHandle = createSavedStateHandle()
                 val dropboxService =
                     (this[APPLICATION_KEY] as EZtodoApplication).dropboxService
                 val taskFileService =
@@ -555,8 +551,7 @@ class TasksViewModel(
                 TasksViewModel(
                     taskFileService = taskFileService,
                     dropboxService = dropboxService,
-                    settingsRepository = settingsRepository,
-                    savedStateHandle = savedStateHandle
+                    settingsRepository = settingsRepository
                 )
             }
         }

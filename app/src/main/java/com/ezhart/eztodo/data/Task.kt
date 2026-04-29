@@ -18,27 +18,45 @@ data class Task(val task: String) {
 
     init {
         val matchResult = taskRegex.find(task)
-        val groups = matchResult?.groups as MatchNamedGroupCollection
 
-        var taskBody = groups[BODY]?.value ?: ""
-        completedDate = tryParseDate(groups[COMPLETED_DATE]?.value)
-        createdDate = tryParseDate(groups[CREATED_DATE]?.value)
-        completed = groups[DONE] != null
+        if (matchResult == null) {
+            body = ""
+            taskPriority = NoPriority
+            completed = false
+            completedDate = null
+            createdDate = null
+            dueDate = null
+            metadata = mapOf()
+            projects = setOf()
+            contexts = setOf()
+        } else {
 
-        taskPriority = when (val pri = groups[PRIORITY]?.value[0]) {
-            is Char -> Priority(pri)
-            else -> NoPriority
+            val groups = matchResult.groups as MatchNamedGroupCollection
+
+            var taskBody = groups[BODY]?.value ?: ""
+            completedDate = tryParseDate(groups[COMPLETED_DATE]?.value)
+            createdDate = tryParseDate(groups[CREATED_DATE]?.value)
+            completed = groups[DONE] != null
+
+            taskPriority = when (val pri = groups[PRIORITY]?.value[0]) {
+                is Char -> Priority(pri)
+                else -> NoPriority
+            }
+
+            metadata = parseMetadata(taskBody)
+            dueDate = tryParseDate(metadata["due"])
+            projects = parseProjects(taskBody)
+            contexts = parseContexts(taskBody)
+
+            // Make sure to strip due:date metadata out of the displayed task body
+            body = when (metadata["due"]) {
+                null -> taskBody
+                else -> taskBody.replace("due:" + metadata["due"], "").trim()
+            }
         }
 
-        metadata = parseMetadata(taskBody)
-        dueDate = tryParseDate(metadata["due"])
-        projects = parseProjects(taskBody)
-        contexts = parseContexts(taskBody)
-
-        // Make sure to strip due:date metadata out of the displayed task body
-        body = when (metadata["due"]) {
-            null -> taskBody
-            else -> taskBody.replace("due:" + metadata["due"], "").trim()
+        fun isEmpty():Boolean{
+            
         }
     }
 
@@ -143,7 +161,7 @@ data class Task(val task: String) {
         fun insertCreatedDate(task: String, createdDate: LocalDate): String {
 
             val prospectiveTask = Task(task)
-            if(prospectiveTask.createdDate != null){
+            if (prospectiveTask.createdDate != null) {
                 return task
             }
 
@@ -177,13 +195,13 @@ data class Task(val task: String) {
         }
 
         fun markCompleted(task: String, completedDate: LocalDate): String {
-            if(task.startsWith("x ")){
+            if (task.startsWith("x ")) {
                 return task
             }
 
             val priority = Task.parsePriority(task)
 
-            if(priority == NoPriority) {
+            if (priority == NoPriority) {
                 return "x $completedDate $task"
             }
 
@@ -191,7 +209,7 @@ data class Task(val task: String) {
         }
 
         fun markPending(task: String): String {
-            if(task.startsWith("x ")){
+            if (task.startsWith("x ")) {
                 return task.substring(13)
             }
 
