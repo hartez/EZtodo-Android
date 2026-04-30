@@ -353,8 +353,6 @@ fun SettingButton(
     )
 }
 
-// TODO need a dialog for selecting sync frequencies
-
 @Preview(name = "Setting Dialog Light")
 @Preview("Setting Dialog Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable

@@ -26,6 +26,7 @@ import androidx.compose.ui.window.PopupProperties
 import com.ezhart.eztodo.data.NoPriority
 import com.ezhart.eztodo.data.TaskPriority
 import com.ezhart.eztodo.ui.theme.AppTheme
+import com.ezhart.eztodo.ui.theme.Dimensions
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -53,10 +54,7 @@ fun PriorityMenu(
                 text = "Select Priority",
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier
-                    .padding(
-                        16.dp,
-                        8.dp
-                    ) // TODO Put this padding and the tags dialog padding into dimensions
+                    .padding(Dimensions.DialogHeadingPadding)
             )
         }
 

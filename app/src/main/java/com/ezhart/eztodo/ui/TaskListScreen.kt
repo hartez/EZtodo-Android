@@ -91,9 +91,6 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
     }
 
     BackHandler(!WindowInsets.isImeVisible && taskListUIState.shouldHandleBackNavigation) {
-        // TODO Hitting the back button while the text filter editor is open should switch back to
-        // the default app bar. But the viewModel doesn't know about the search bar state, so we'd need
-        // to add that to the taskListUIState
         viewModel.back()
     }
 
