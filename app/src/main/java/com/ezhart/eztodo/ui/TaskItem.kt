@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.styleFor
 import com.ezhart.eztodo.ui.theme.AppTheme
+import com.ezhart.eztodo.viewmodels.DateFormatter
 import com.ezhart.eztodo.viewmodels.SwipeOption
 import com.ezhart.eztodo.viewmodels.TaskSwipeOptions
 import kotlinx.coroutines.launch
@@ -79,12 +80,14 @@ fun TaskItem(
                         swipeOptions.endToStartOption?.onSwipe(task)
                     }
                 }
+
                 SwipeToDismissBoxValue.StartToEnd -> {
                     coroutineScope.launch {
                         swipeToDismissBoxState.reset()
                         swipeOptions.startToEndOption?.onSwipe(task)
                     }
                 }
+
                 else -> {}
             }
         }
@@ -166,27 +169,24 @@ fun highlightProjectsAndContexts(task: Task, color: Color): AnnotatedString {
 
 
 fun formatDateLine(task: Task, overdueColor: Color): AnnotatedString {
-
-    // TODO See if there's something like moment.js we can grab to format the due dates nicer
-    // e.g. "Tomorrow", "Monday", etc.
-
     return buildAnnotatedString {
 
         if (task.completed) {
-            append("Completed " + task.completedDate.toString())
+            append(DateFormatter.completed(task.completedDate))
         }
 
         val dueDate = task.dueDate
 
         if (dueDate != null) {
+            val dueDateDisplay = DateFormatter.due(task.dueDate)
 
             if (task.completed) {
-                append(" (due $dueDate)")
+                append(" (${dueDateDisplay})")
             } else if (LocalDate.now() > dueDate) {
                 pushStyle(SpanStyle(color = overdueColor))
-                append(dueDate.toString())
+                append(dueDateDisplay)
             } else {
-                append(dueDate.toString())
+                append(dueDateDisplay)
             }
         }
     }

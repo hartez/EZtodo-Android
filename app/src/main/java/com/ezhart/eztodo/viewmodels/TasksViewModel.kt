@@ -166,6 +166,10 @@ class TasksViewModel(
         val currentTask = selectedTask.value ?: return null
         val tasks = taskListUIState.value.filteredTasks
 
+        if(tasks.count() == 0){
+            return null
+        }
+
         val currentIndex = tasks.indexOf(currentTask)
 
         if (currentIndex >= tasks.count() - 1) {
@@ -178,6 +182,10 @@ class TasksViewModel(
     private fun getPreviousTask(): Task? {
         val currentTask = selectedTask.value ?: return null
         val tasks = taskListUIState.value.filteredTasks
+
+        if(tasks.count() == 0){
+            return null
+        }
 
         val currentIndex = tasks.indexOf(currentTask)
 

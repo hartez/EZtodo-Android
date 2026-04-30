@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.styleFor
 import com.ezhart.eztodo.ui.theme.AppTheme
-import org.ocpsoft.prettytime.PrettyTime
+import com.ezhart.eztodo.viewmodels.DateFormatter
 import java.time.LocalDate
 
 @Composable
@@ -36,8 +36,6 @@ fun DetailsCard(
     onEditRequest: () -> Unit = {},
     onToggleCompleted: () -> Unit = {},
 ) {
-    val prettyTime = PrettyTime()
-
     Card(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -53,7 +51,7 @@ fun DetailsCard(
                 )
 
                 Text(
-                    text = formatDueDate(task.dueDate, prettyTime),
+                    text = DateFormatter.due(task.dueDate),
                     color = when (task.dueDate != null && task.dueDate < LocalDate.now()) {
                         true -> MaterialTheme.colorScheme.error
                         else -> MaterialTheme.colorScheme.onSurface
@@ -99,7 +97,7 @@ fun DetailsCard(
 
             Row {
                 Text(
-                    text = formatCreatedDate(task.createdDate, prettyTime),
+                    text = DateFormatter.created(task.createdDate),
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -107,32 +105,6 @@ fun DetailsCard(
             }
         }
     }
-}
-
-fun formatCreatedDate(createdDate: LocalDate?, prettyTime: PrettyTime): String {
-    if(createdDate == null){
-        return "[Unknown]"
-    }
-
-    val result = StringBuilder()
-    result.append("Created ${createdDate.toString()}")
-
-    val now = LocalDate.now()
-    if (createdDate.atStartOfDay() == now.atStartOfDay()) {
-        result.append(" (Today)")
-    } else {
-        result.append(" (${prettyTime.format(createdDate)})")
-    }
-
-    return result.toString()
-}
-
-fun formatDueDate(dueDate: LocalDate?, prettyTime: PrettyTime) : String {
-    if(dueDate == null){
-        return "No due date"
-    }
-
-    return "Due ${prettyTime.format(dueDate)}"
 }
 
 @Composable
