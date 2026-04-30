@@ -8,7 +8,8 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,13 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.Dialog
 import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.ui.theme.AppTheme
 import com.ezhart.eztodo.viewmodels.DetailsDialogUIState
 import kotlin.math.roundToInt
 
 @Composable
-fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit, onEditRequest: () -> Unit) {
+fun DetailsDialog(uiState: DetailsDialogUIState, onDismissRequest: () -> Unit, onEditRequest: () -> Unit) {
     var horizontalDragState by remember { mutableStateOf(AnchoredDraggableState(HorizontalSwipeValue.Current)) }
     var verticalDragState by remember { mutableStateOf(AnchoredDraggableState(VerticalSwipeValue.Current)) }
 
@@ -59,7 +61,7 @@ fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit, onEditRe
 
         when (verticalDragState.settledValue) {
             VerticalSwipeValue.Dismiss -> {
-                onDismiss()
+                onDismissRequest()
             }
 
             VerticalSwipeValue.Current -> {}
@@ -69,79 +71,81 @@ fun DetailsDialog(uiState: DetailsDialogUIState, onDismiss: () -> Unit, onEditRe
         }
     }
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .onSizeChanged { layoutSize ->
-                screenWidthOffset = layoutSize.width.toFloat()
-                horizontalDragState.updateAnchors(
-                    DraggableAnchors {
-                        HorizontalSwipeValue.Next at -(layoutSize.width.toFloat())
-                        HorizontalSwipeValue.Current at 0f
-                        HorizontalSwipeValue.Previous at (layoutSize.width.toFloat())
-                    })
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .onSizeChanged { layoutSize ->
+                    screenWidthOffset = layoutSize.width.toFloat()
+                    horizontalDragState.updateAnchors(
+                        DraggableAnchors {
+                            HorizontalSwipeValue.Next at -(layoutSize.width.toFloat())
+                            HorizontalSwipeValue.Current at 0f
+                            HorizontalSwipeValue.Previous at (layoutSize.width.toFloat())
+                        })
 
-                verticalDragState.updateAnchors(
-                    DraggableAnchors {
-                        VerticalSwipeValue.Dismiss at (-layoutSize.height.toFloat())
-                        VerticalSwipeValue.Current at 0f
-                        VerticalSwipeValue.Edit at (layoutSize.height.toFloat())
-                    }
+                    verticalDragState.updateAnchors(
+                        DraggableAnchors {
+                            VerticalSwipeValue.Dismiss at (-layoutSize.height.toFloat())
+                            VerticalSwipeValue.Current at 0f
+                            VerticalSwipeValue.Edit at (layoutSize.height.toFloat())
+                        }
+                    )
+                }
+
+        ) {
+
+            val baseModifier = Modifier.fillMaxSize(0.90f)
+
+            if (uiState.task != null) {
+                DetailsCard(
+                    uiState.task,
+                    onEditRequest = onEditRequest,
+                    onToggleCompleted = uiState.onToggleCompleted,
+                    modifier = baseModifier
+                        .offset {
+                            IntOffset(
+                                horizontalDragState.requireOffset().roundToInt(),
+                                verticalDragState.requireOffset().roundToInt()
+                            )
+                        }
+                        .anchoredDraggable(
+                            horizontalDragState,
+                            orientation = Orientation.Horizontal
+                        )
+                        .anchoredDraggable(
+                            verticalDragState,
+                            orientation = Orientation.Vertical
+                        )
                 )
             }
 
-    ) {
+            if (uiState.nextTask != null) {
+                DetailsCard(
+                    uiState.nextTask,
+                    baseModifier
+                        .offset {
+                            IntOffset(
+                                (horizontalDragState.requireOffset() + screenWidthOffset).roundToInt(),
+                                0
+                            )
+                        }
+                )
+            }
 
-        val baseModifier = Modifier.fillMaxSize(0.90f)
-
-        if (uiState.task != null) {
-            DetailsCard(
-                uiState.task,
-                onEditRequest = onEditRequest,
-                onToggleCompleted = uiState.onToggleCompleted,
-                modifier = baseModifier
-                    .offset {
-                        IntOffset(
-                            horizontalDragState.requireOffset().roundToInt(),
-                            verticalDragState.requireOffset().roundToInt()
-                        )
-                    }
-                    .anchoredDraggable(
-                        horizontalDragState,
-                        orientation = Orientation.Horizontal
-                    )
-                    .anchoredDraggable(
-                        verticalDragState,
-                        orientation = Orientation.Vertical
-                    )
-            )
-        }
-
-        if (uiState.nextTask != null) {
-            DetailsCard(
-                uiState.nextTask,
-                baseModifier
-                    .offset {
-                        IntOffset(
-                            (horizontalDragState.requireOffset() + screenWidthOffset).roundToInt(),
-                            0
-                        )
-                    }
-            )
-        }
-
-        if (uiState.previousTask != null) {
-            DetailsCard(
-                uiState.previousTask,
-                baseModifier
-                    .offset {
-                        IntOffset(
-                            (horizontalDragState.requireOffset() - screenWidthOffset).roundToInt(),
-                            0
-                        )
-                    }
-            )
+            if (uiState.previousTask != null) {
+                DetailsCard(
+                    uiState.previousTask,
+                    baseModifier
+                        .offset {
+                            IntOffset(
+                                (horizontalDragState.requireOffset() - screenWidthOffset).roundToInt(),
+                                0
+                            )
+                        }
+                )
+            }
         }
     }
 }
@@ -159,8 +163,10 @@ fun DetailsDialogPreview() {
     )
 
     AppTheme {
-        Surface {
-            DetailsDialog(uiState, {}, {})
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                DetailsDialog(uiState, {}, {})
+            }
         }
     }
 }

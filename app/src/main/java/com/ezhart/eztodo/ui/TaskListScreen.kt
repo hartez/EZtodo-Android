@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ezhart.eztodo.ui.theme.Dimensions.ToolBarSafeBottomPadding
@@ -183,13 +182,10 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
             }
 
             if (isDetailsDialogOpen) {
-                // TODO feels like this should be consolidatable
-                Dialog({ isDetailsDialogOpen = false }) {
-                    DetailsDialog(detailsDialogUIState, { isDetailsDialogOpen = false }, {
-                        isDetailsDialogOpen = false
-                        isTaskEditorOpen = true
-                    })
-                }
+                DetailsDialog(detailsDialogUIState, { isDetailsDialogOpen = false }, {
+                    isDetailsDialogOpen = false
+                    isTaskEditorOpen = true
+                })
             }
         }
     }
