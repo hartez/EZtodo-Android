@@ -48,8 +48,6 @@ fun TaskListToolbar(
     val filterBarFocusRequester = remember { FocusRequester() }
     var isToolbarMenuOpen by remember { mutableStateOf(false) }
 
-
-
     HorizontalFloatingToolbar(
         expanded = true,
         floatingActionButtonPosition = FloatingToolbarHorizontalFabPosition.Start,

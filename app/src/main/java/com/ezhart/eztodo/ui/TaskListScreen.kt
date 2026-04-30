@@ -1,6 +1,9 @@
 package com.ezhart.eztodo.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
@@ -133,8 +136,15 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         })
                 }
 
-                if (!(isTaskEditorOpen || isTaskCreatorOpen)) {
-                    // TODO a nicer way to handle this would be to animate the toolbar offscreen while editing
+                AnimatedVisibility(
+                    !(isTaskEditorOpen || isTaskCreatorOpen),
+                    enter = slideInVertically(
+                        initialOffsetY = { height -> height * 2 }),
+                    exit = slideOutVertically(
+                        targetOffsetY = { height -> height * 2 }),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .imePadding()) {
                     TaskListToolbar(
                         showFilters = { isFilterSheetOpen = true },
                         onNavigateToSettings = onNavigateToSettings,
@@ -143,41 +153,35 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                             isTaskCreatorOpen = true
                         },
                         viewModel.textFilterEditor,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .imePadding()
                     )
                 }
             }
 
             if (isFilterSheetOpen) {
                 FiltersSheet(
-                    filterSheetUIState,
-                    { isFilterSheetOpen = false }
-                )
+                    filterSheetUIState, { isFilterSheetOpen = false })
             }
 
             if (isTaskEditorOpen) {
                 TaskEditor(
                     editorUIState, {
-                        isTaskEditorOpen = false
-                    }, {
-                        viewModel.commitTaskChanges()
-                        isTaskEditorOpen = false
+                    isTaskEditorOpen = false
+                }, {
+                    viewModel.commitTaskChanges()
+                    isTaskEditorOpen = false
 
-                    }, viewModel::listTagSelections
+                }, viewModel::listTagSelections
                 )
             }
 
             if (isTaskCreatorOpen) {
                 TaskEditor(
-                    editorState = creatorUIState,
-                    {
-                        isTaskCreatorOpen = false
-                    }, {
-                        viewModel.submitTask()
+                    editorState = creatorUIState, {
+                    isTaskCreatorOpen = false
+                }, {
+                    viewModel.submitTask()
 
-                    }, viewModel::listTagSelections
+                }, viewModel::listTagSelections
                 )
             }
 
