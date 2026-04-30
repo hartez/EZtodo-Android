@@ -30,7 +30,7 @@ fun ToolbarMenu(
         DropdownMenuPopup(
             expanded = true,
             onDismissRequest = { onClose() },
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
 
             DropdownMenuItem(

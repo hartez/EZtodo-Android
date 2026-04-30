@@ -32,7 +32,6 @@ import com.ezhart.eztodo.data.Task
 import com.ezhart.eztodo.data.TaskFileService
 import com.ezhart.eztodo.dropbox.DropboxService
 import com.ezhart.eztodo.dropbox.SyncResult
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -394,10 +393,6 @@ class TasksViewModel(
             }
 
             loadTasks()
-
-            // TODO this is a hack, got to figure out how to fix this
-            // if the update is too fast, the refreshing state will get stuck
-            delay(100)
 
             isRefreshing = false
         }
