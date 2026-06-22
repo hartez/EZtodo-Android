@@ -76,7 +76,7 @@ fun TagAutocompleteMenu(
             modifier = Modifier
                 .heightIn(max = maxHeight)
                 .width(IntrinsicSize.Min)
-                .background(color = MaterialTheme.colorScheme.surface)
+                .background(color = MaterialTheme.colorScheme.surfaceContainer)
         ) {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
