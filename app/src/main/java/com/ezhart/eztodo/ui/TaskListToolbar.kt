@@ -44,7 +44,7 @@ fun TaskListToolbar(
     modifier: Modifier = Modifier,
     inFilterMode: Boolean = false
 ) {
-    var isInTextFilterMode by remember { mutableStateOf(inFilterMode) }
+    var isInTextFilterMode by remember { mutableStateOf(inFilterMode || (!filterTextState.text.isEmpty())) }
     val filterBarFocusRequester = remember { FocusRequester() }
     var isToolbarMenuOpen by remember { mutableStateOf(false) }
 

@@ -152,7 +152,7 @@ fun TaskListScreen(onNavigateToSettings: () -> Unit) {
                         onCreateTask = {
                             isTaskCreatorOpen = true
                         },
-                        viewModel.textFilterEditor,
+                        viewModel.textFilterEditor
                     )
                 }
             }
