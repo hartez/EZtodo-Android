@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Share
@@ -65,11 +66,13 @@ fun DetailsCard(
                     .weight(1f)
                     .padding(top = 16.dp)
             ) {
-                Text(
-                    text = task.body,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.bodyLarge.styleFor(task)
-                )
+                SelectionContainer {
+                    Text(
+                        text = task.body,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyLarge.styleFor(task)
+                    )
+                }
             }
 
             Row {
